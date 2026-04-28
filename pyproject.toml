@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "futurisys-ml-api"
+version = "0.1.0"
+description = ""
+authors = ["Maxime <maximebarbier57@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+fastapi = "^0.136.1"
+uvicorn = "^0.46.0"
+scikit-learn = "^1.8.0"
+pandas = "^3.0.2"
+numpy = "^2.4.4"
+pydantic = "^2.13.3"
+python-dotenv = "^1.2.2"
+psycopg2-binary = "^2.9.12"
+joblib = "^1.5.3"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0.3"
+pytest-cov = "^7.1.0"
+httpx = "^0.28.1"
+black = "^26.3.1"
+ruff = "^0.15.12"
+ipykernel = "^7.2.0"
+jupyter = "^1.1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
