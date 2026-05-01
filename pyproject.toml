@@ -4,18 +4,22 @@ version = "0.1.0"
 description = ""
 authors = ["Maxime <maximebarbier57@gmail.com>"]
 readme = "README.md"
+packages = [{ include = "app" }]
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.12"
+python = ">=3.12,<3.13"
 fastapi = "^0.136.1"
 uvicorn = "^0.46.0"
-scikit-learn = "^1.8.0"
+scikit-learn = "1.6.1"
 pandas = "^3.0.2"
 numpy = "^2.4.4"
 pydantic = "^2.13.3"
 python-dotenv = "^1.2.2"
 psycopg2-binary = "^2.9.12"
 joblib = "^1.5.3"
+missingno = "^0.5.2"
+imbalanced-learn = "^0.14.1"
+lightgbm = "^4.6.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.3"
@@ -29,3 +33,9 @@ jupyter = "^1.1.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+
