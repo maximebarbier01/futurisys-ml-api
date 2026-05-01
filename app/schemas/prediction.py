@@ -18,7 +18,7 @@ class PredictionInput(BaseModel):
     note_evaluation_actuelle: int = Field(..., example=4)
 
     niveau_hierarchique_poste: int = Field(..., example=2)
-    heure_supplementaires: str = Field(..., example="Non")
+    heure_supplementaires: int = Field(..., json_schema_extra={"example": 0})
     augementation_salaire_precedente: int = Field(..., example=12)
     nombre_participation_pee: int = Field(..., example=1)
     nb_formations_suivies: int = Field(..., example=2)
