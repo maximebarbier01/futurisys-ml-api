@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
           python -m pip install pytest pytest-cov
 
       # 4. Exécution des tests et mesure de la couverture du code (test échoue si couv < 70%)
