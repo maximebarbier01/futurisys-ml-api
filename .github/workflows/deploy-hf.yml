@@ -16,6 +16,8 @@ jobs:
       - name: Sync repository to Hugging Face Space
         uses: huggingface/hub-sync@v0.1.0
         with:
-          source_repo: ${{ github.repository }}
-          target_repo: mxmbrbr/futurisys-ml-api
-          token: ${{ secrets.HF_TOKEN }}
+          github_repo_id: maximebarbier01/futurisys-ml-api
+          huggingface_repo_id: mxmbrbr/futurisys-ml-api
+          hf_token: ${{ secrets.HF_TOKEN }}
+          repo_type: space
+          space_sdk: docker
