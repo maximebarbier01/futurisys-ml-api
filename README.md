@@ -37,6 +37,18 @@ poetry env use $(which python)
 poetry install
 ```
 
+## Protection de la branche principale
+
+La branche `main` est protégée afin de garantir la stabilité de la version principale du projet.
+
+Les règles mises en place sont les suivantes :
+
+- toute modification doit passer par une Pull Request ;
+- le job GitHub Actions `test` doit réussir avant fusion ;
+- la branche de travail doit être à jour avec `main` avant le merge.
+
+Cette configuration empêche l’intégration d’un code qui ne passe pas les tests automatiques.
+
 ## API déployée
 
 L'API est déployée sur Hugging Face Spaces via Docker.
