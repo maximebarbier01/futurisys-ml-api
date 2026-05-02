@@ -1,0 +1,21 @@
+name: CD - Deploy to Hugging Face Spaces
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Sync repository to Hugging Face Space
+        uses: huggingface/hub-sync@v0.1.0
+        with:
+          source_repo: ${{ github.repository }}
+          target_repo: mxmbrbr/futurisys-ml-api
+          token: ${{ secrets.HF_TOKEN }}
