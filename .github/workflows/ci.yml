@@ -2,9 +2,12 @@ name: CI - Tests API
 
 on:
   push:
-    branches: [main, develop, "feature/*"]
+    branches: 
+      - '**'
   pull_request:
-    branches: [main, develop]
+    branches: 
+      - main
+      - develop
 
 jobs:
   test:
