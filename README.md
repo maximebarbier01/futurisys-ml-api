@@ -116,7 +116,7 @@ L'API ne réentraîne pas le modèle. Elle charge l'artefact existant au démarr
 ### 1. Cloner le dépôt
 
 ```bash
-git clone git@github.com:mxmbrbr/futurisys-ml-api.git
+git clone git@github.com:maximebarbier01/futurisys-ml-api.git
 cd futurisys-ml-api
 ```
 
@@ -223,12 +223,12 @@ curl -X POST "https://mxmbrbr-futurisys-ml-api.hf.space/predict" \
     "niveau_education": 3,
     "annees_depuis_la_derniere_promotion": 1,
     "annes_sous_responsable_actuel": 3,
-    "genre": "Homme",
-    "statut_marital": "Marié",
-    "departement": "Recherche & Développement",
-    "poste": "Ingénieur de recherche",
-    "domaine_etude": "Sciences de la vie",
-    "frequence_deplacement": "Voyage rarement"
+    "genre": "M",
+    "statut_marital": "Marié(e)",
+    "departement": "Consulting",
+    "poste": "Consultant",
+    "domaine_etude": "Transformation Digitale",
+    "frequence_deplacement": "Occasionnel"
   }'
 ```
 
