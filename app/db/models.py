@@ -1,9 +1,13 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.database import Base
+
+
+def utc_now() -> datetime:
+    return datetime.now(UTC)
 
 
 class Employee(Base):
@@ -43,7 +47,7 @@ class Employee(Base):
     domaine_etude = Column(String(100), nullable=False)
     frequence_deplacement = Column(String(50), nullable=False)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     prediction_inputs = relationship("PredictionInputLog", back_populates="employee")
 
@@ -86,7 +90,7 @@ class PredictionInputLog(Base):
     domaine_etude = Column(String(100), nullable=False)
     frequence_deplacement = Column(String(50), nullable=False)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     employee = relationship("Employee", back_populates="prediction_inputs")
     prediction_output = relationship(
@@ -104,6 +108,7 @@ class PredictionOutputLog(Base):
         Integer,
         ForeignKey("prediction_inputs.id"),
         nullable=False,
+        unique=True,
     )
 
     prediction = Column(Integer, nullable=False)
@@ -114,7 +119,7 @@ class PredictionOutputLog(Base):
     model_name = Column(String(100), nullable=True)
     model_version = Column(String(50), nullable=True)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     prediction_input = relationship(
         "PredictionInputLog",
