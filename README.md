@@ -216,7 +216,7 @@ curl -X POST "https://mxmbrbr-futurisys-ml-api.hf.space/predict" \
     "note_evaluation_actuelle": 4,
     "niveau_hierarchique_poste": 2,
     "heure_supplementaires": 0,
-    "augementation_salaire_precedente": 12,
+    "augementation_salaire_precedente": 0.12,
     "nombre_participation_pee": 1,
     "nb_formations_suivies": 2,
     "distance_domicile_travail": 8,
