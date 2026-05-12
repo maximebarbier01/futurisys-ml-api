@@ -72,6 +72,7 @@ def test_predict_invalid_category():
 
     assert response.status_code == 422
 
+
 def test_predict_invalid_percentage():
     payload = get_valid_payload()
     payload["augementation_salaire_precedente"] = 1.5
@@ -79,3 +80,20 @@ def test_predict_invalid_percentage():
     response = client.post("/predict", json=payload)
 
     assert response.status_code == 422
+
+
+def test_openapi_schema():
+    response = client.get("/openapi.json")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "openapi" in data
+    assert "info" in data
+    assert "paths" in data
+
+    assert data["info"]["title"] == "Futurisys ML API"
+    assert "/predict" in data["paths"]
+    assert "/health" in data["paths"]
+    assert "/" in data["paths"]
