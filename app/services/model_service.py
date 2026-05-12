@@ -16,6 +16,8 @@ class ModelService:
         self.model = self.artifact["model"]
         self.threshold = float(self.artifact["threshold"])
         self.feature_columns = self.artifact["feature_columns"]
+        self.display_name = self.artifact.get("model_name", "final_model")
+        self.model_version = str(self.artifact.get("model_version", "0.1.0"))
 
     def _load_artifact(self) -> dict[str, Any]:
         if not self.model_path.exists():
