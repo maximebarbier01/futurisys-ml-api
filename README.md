@@ -10,145 +10,119 @@ pinned: false
 
 # Futurisys ML API
 
-## Présentation
+## Presentation
 
-Ce projet est un Proof of Concept réalisé dans le cadre du parcours OpenClassrooms.
+Ce projet est un Proof of Concept realise dans le cadre du parcours OpenClassrooms.
 
-L'objectif est de déployer un modèle de machine learning issu du projet **"Classifier automatiquement des informations"** afin de le rendre exploitable via une API.
+L'objectif est de deployer un modele de machine learning issu du projet
+**"Classifier automatiquement des informations"** afin de le rendre exploitable
+via une API FastAPI.
 
-Le projet répond à une demande de Futurisys, entreprise souhaitant rendre ses modèles de machine learning opérationnels, testables et accessibles à travers une API performante.
+L'API predit le risque d'attrition d'un collaborateur a partir de donnees RH.
+Le modele est charge depuis un artefact Joblib deja entraine, puis expose via
+une interface REST documentee avec Swagger/OpenAPI.
 
-L'API permet de prédire le risque d'attrition d'un collaborateur à partir de données RH, en s'appuyant sur un modèle entraîné précédemment et exposé via **FastAPI**.
+Le projet met deja en place plusieurs bonnes pratiques d'ingenierie logicielle :
 
-Le projet met également en place des bonnes pratiques d'ingénierie logicielle :
-
-- structuration claire du dépôt ;
-- gestion des dépendances avec Poetry ;
-- tests automatisés avec Pytest ;
-- intégration continue avec GitHub Actions ;
-- déploiement continu vers Hugging Face Spaces ;
-- documentation d'installation, d'utilisation et de déploiement.
-
----
+- structuration claire du depot ;
+- gestion des dependances avec Poetry ;
+- validation des entrees avec Pydantic ;
+- tests automatises avec Pytest ;
+- integration continue avec GitHub Actions ;
+- deploiement continu vers Hugging Face Spaces avec Docker.
 
 ## Stack technique
 
 - Python 3.11
-- WSL2 Ubuntu 24.04 LTS
-- Conda
-- Poetry
 - FastAPI
 - Pydantic
-- Pytest
-- Pytest-cov
-- Scikit-learn
+- pandas
+- scikit-learn
 - LightGBM
-- Imbalanced-learn
 - Joblib
-- Docker
-- Git / GitHub
+- Pytest
 - GitHub Actions
+- Docker
 - Hugging Face Spaces
-- PostgreSQL, prévu pour la persistance des prédictions
-
----
 
 ## Structure du projet
 
 ```text
 futurisys-ml-api/
-├── app/
-│   ├── api/
-│   │   └── routes.py
-│   ├── core/
-│   ├── db/
-│   ├── schemas/
-│   │   └── prediction.py
-│   ├── services/
-│   │   └── model_service.py
-│   └── main.py
-├── docs/
-├── model/
-│   └── final_model.joblib
-├── notebooks/
-├── scripts/
-├── sql/
-├── tests/
-│   ├── conftest.py
-│   └── test_api.py
-├── .github/
-│   └── workflows/
-│       ├── ci.yml
-│       └── deploy-hf.yml
-├── Dockerfile
-├── README.md
-├── pyproject.toml
-├── poetry.lock
-├── requirements.txt
-└── requirements-dev.txt
+|- app/
+|  |- api/
+|  |  `- routes.py
+|  |- schemas/
+|  |  `- prediction.py
+|  |- services/
+|  |  `- model_service.py
+|  `- main.py
+|- model/
+|  `- final_model.joblib
+|- tests/
+|  |- conftest.py
+|  `- test_api.py
+|- .github/
+|  `- workflows/
+|     |- ci.yml
+|     `- deploy-hf.yml
+|- Dockerfile
+|- README.md
+|- pyproject.toml
+|- poetry.lock
+|- requirements.txt
+`- requirements-dev.txt
 ```
 
----
+## Modele de machine learning
 
-## Modèle de machine learning
-
-Le modèle utilisé dans ce projet provient du projet OpenClassrooms précédent consacré à la classification automatique.
-
-Le modèle final est sauvegardé sous forme d'artefact Joblib :
+Le modele final est stocke dans :
 
 ```text
 model/final_model.joblib
 ```
 
-Cet artefact contient :
+L'artefact contient :
 
-- le pipeline de prédiction complet ;
-- le seuil de décision métier ;
-- la liste des variables attendues en entrée ;
-- des métadonnées de traçabilité du modèle.
+- le pipeline de prediction ;
+- le seuil de decision metier ;
+- la liste des variables attendues en entree.
 
-L'API ne réentraîne pas le modèle. Elle charge l'artefact existant au démarrage, reçoit des données au format JSON, les transforme en DataFrame pandas, puis renvoie une prédiction.
-
----
+L'API ne reentraine pas le modele. Elle charge simplement l'artefact au
+demarrage, transforme la requete JSON en `DataFrame` pandas, puis renvoie une
+prediction binaire accompagnee de sa probabilite.
 
 ## Installation locale
 
-### 1. Cloner le dépôt
+### 1. Cloner le depot
 
 ```bash
 git clone git@github.com:maximebarbier01/futurisys-ml-api.git
 cd futurisys-ml-api
 ```
 
-### 2. Créer l'environnement Conda
+### 2. Creer l'environnement Python
+
+Avec Conda :
 
 ```bash
 conda create -n futurisys-ml-api python=3.11 -y
 conda activate futurisys-ml-api
 ```
 
-### 3. Installer les dépendances avec Poetry
+### 3. Installer les dependances avec Poetry
 
 ```bash
 poetry env use $(which python)
 poetry install
 ```
 
-### 4. Générer les fichiers requirements si nécessaire
-
-Pour les dépendances de production :
+### 4. Regenerer les fichiers requirements si necessaire
 
 ```bash
 poetry export -f requirements.txt --output requirements.txt --without-hashes
-```
-
-Pour les dépendances de développement et de test :
-
-```bash
 poetry export --with dev -f requirements.txt --output requirements-dev.txt --without-hashes
 ```
-
----
 
 ## Lancer l'API en local
 
@@ -156,73 +130,60 @@ poetry export --with dev -f requirements.txt --output requirements-dev.txt --wit
 uvicorn app.main:app --reload
 ```
 
-L'API est alors disponible à l'adresse suivante :
+L'API est alors disponible sur :
 
-```text
-http://127.0.0.1:8000
-```
+- `http://127.0.0.1:8000`
+- `http://127.0.0.1:8000/docs`
+- `http://127.0.0.1:8000/openapi.json`
+- `http://127.0.0.1:8000/health`
 
-Documentation Swagger locale :
+## API deployee
 
-```text
-http://127.0.0.1:8000/docs
-```
+L'application est deployee sur Hugging Face Spaces via Docker :
 
-Endpoint de vérification :
+- application : [mxmbrbr-futurisys-ml-api.hf.space](https://mxmbrbr-futurisys-ml-api.hf.space)
+- Swagger : [mxmbrbr-futurisys-ml-api.hf.space/docs](https://mxmbrbr-futurisys-ml-api.hf.space/docs)
+- health check : [mxmbrbr-futurisys-ml-api.hf.space/health](https://mxmbrbr-futurisys-ml-api.hf.space/health)
 
-```text
-http://127.0.0.1:8000/health
-```
+Le deploiement est automatise par GitHub Actions lors d'un `push` sur `main`.
 
----
+## Endpoints disponibles
 
-## API déployée
+| Methode | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | Verifie que l'API est accessible |
+| `GET` | `/health` | Verifie l'etat de sante de l'API |
+| `POST` | `/predict` | Retourne une prediction d'attrition |
 
-L'API est déployée sur Hugging Face Spaces via Docker.
+## Exemple d'appel a l'API
 
-- URL de l'application : https://mxmbrbr-futurisys-ml-api.hf.space
-- Documentation Swagger : https://mxmbrbr-futurisys-ml-api.hf.space/docs
-- Health check : https://mxmbrbr-futurisys-ml-api.hf.space/health
-
-Le déploiement est automatisé avec GitHub Actions. Lorsqu'une Pull Request est fusionnée dans la branche `main`, le workflow CD synchronise automatiquement le dépôt GitHub vers Hugging Face Spaces.
-
----
-
-## Exemple d'appel à l'API
-
-Endpoint :
-
-```http
-POST /predict
-```
-
-Exemple de requête avec `curl` :
+Exemple de requete avec `curl` :
 
 ```bash
 curl -X POST "https://mxmbrbr-futurisys-ml-api.hf.space/predict" \
   -H "Content-Type: application/json" \
   -d '{
-    "age": 35,
-    "revenu_mensuel": 4200,
-    "nombre_experiences_precedentes": 2,
-    "annee_experience_totale": 10,
-    "annees_dans_l_entreprise": 5,
-    "annees_dans_le_poste_actuel": 3,
+    "age": 38,
+    "revenu_mensuel": 5400,
+    "nombre_experiences_precedentes": 3,
+    "annee_experience_totale": 12,
+    "annees_dans_l_entreprise": 4,
+    "annees_dans_le_poste_actuel": 2,
     "satisfaction_employee_environnement": 3,
     "satisfaction_employee_nature_travail": 4,
-    "satisfaction_employee_equipe": 3,
-    "satisfaction_employee_equilibre_pro_perso": 2,
+    "satisfaction_employee_equipe": 4,
+    "satisfaction_employee_equilibre_pro_perso": 3,
     "note_evaluation_precedente": 3,
     "note_evaluation_actuelle": 4,
     "niveau_hierarchique_poste": 2,
     "heure_supplementaires": 0,
     "augementation_salaire_precedente": 0.12,
     "nombre_participation_pee": 1,
-    "nb_formations_suivies": 2,
-    "distance_domicile_travail": 8,
-    "niveau_education": 3,
+    "nb_formations_suivies": 3,
+    "distance_domicile_travail": 12,
+    "niveau_education": 4,
     "annees_depuis_la_derniere_promotion": 1,
-    "annes_sous_responsable_actuel": 3,
+    "annes_sous_responsable_actuel": 2,
     "genre": "M",
     "statut_marital": "Marié(e)",
     "departement": "Consulting",
@@ -232,7 +193,7 @@ curl -X POST "https://mxmbrbr-futurisys-ml-api.hf.space/predict" \
   }'
 ```
 
-Exemple de réponse :
+Exemple de reponse :
 
 ```json
 {
@@ -243,90 +204,40 @@ Exemple de réponse :
 }
 ```
 
----
+## Validation des donnees
 
-## Interprétation de la réponse
+Le payload attendu est defini dans
+[app/schemas/prediction.py](/mnt/wslg/distro/home/maxime/projects/futurisys-ml-api/app/schemas/prediction.py)
+via un schema Pydantic.
 
-- `prediction = 1` : le modèle prédit un risque d'attrition.
-- `prediction = 0` : le modèle prédit une absence d'attrition.
-- `probability` : probabilité estimée d'attrition.
-- `threshold` : seuil de décision retenu lors de l'entraînement.
-- `label` : libellé lisible de la prédiction.
-
----
-
-## Endpoints disponibles
-
-| Méthode | Endpoint | Description |
-|---|---|---|
-| `GET` | `/` | Vérifie que l'API est accessible |
-| `GET` | `/health` | Vérifie l'état de santé de l'API |
-| `POST` | `/predict` | Retourne une prédiction d'attrition |
-
----
+La documentation Swagger propose un exemple complet d'entree pour faciliter les
+tests manuels.
 
 ## Lancer les tests
 
-Lancer l'ensemble des tests :
+Tests simples :
 
 ```bash
 pytest
 ```
 
-Lancer les tests avec couverture :
+Tests avec couverture :
 
 ```bash
-pytest --cov=app --cov-report=term-missing tests/
+pytest --cov=app --cov-report=term-missing --cov-fail-under=70 tests/
 ```
 
-Le pipeline CI impose également un seuil minimal de couverture.
+Les tests couvrent actuellement :
 
----
-
-## Environnements
-
-Le projet distingue trois environnements.
-
-### Développement local
-
-L'environnement local repose sur WSL2 Ubuntu, Conda et Poetry.
-
-Il permet de :
-
-- développer l'API ;
-- tester localement les endpoints ;
-- lancer les tests unitaires ;
-- vérifier le comportement du modèle avant intégration.
-
-### Test / intégration continue
-
-L'environnement de test est géré par GitHub Actions.
-
-À chaque push ou Pull Request, le workflow CI :
-
-- installe Python 3.11 ;
-- installe les dépendances depuis `requirements-dev.txt` ;
-- exécute les tests Pytest ;
-- calcule la couverture de code ;
-- bloque l'intégration si les tests échouent.
-
-### Production
-
-L'environnement de production est hébergé sur Hugging Face Spaces.
-
-L'application est :
-
-- construite via Docker ;
-- exposée sur le port `7860` ;
-- accessible publiquement sous forme d'API FastAPI.
-
----
+- l'endpoint `/predict` sur un cas nominal ;
+- la validation d'un champ obligatoire manquant ;
+- l'endpoint `/health`.
 
 ## CI/CD
 
 Le projet utilise deux workflows GitHub Actions.
 
-### Intégration continue
+### Integration continue
 
 Fichier :
 
@@ -334,18 +245,19 @@ Fichier :
 .github/workflows/ci.yml
 ```
 
-Rôle :
+Le workflow CI :
 
-- exécuter les tests automatiquement ;
-- vérifier la couverture de code ;
-- empêcher l'intégration de code non valide.
+- installe Python 3.11 ;
+- installe les dependances depuis `requirements-dev.txt` ;
+- execute Pytest ;
+- verifie une couverture minimale de 70 %.
 
-Déclenchement :
+Declenchement actuel :
 
-- push sur `main`, `develop` ou `feature/*` ;
-- Pull Request vers `main` ou `develop`.
+- `push` sur `main`, `develop` et `feature/*` ;
+- `pull_request` vers `main` et `develop`.
 
-### Déploiement continu
+### Deploiement continu
 
 Fichier :
 
@@ -353,39 +265,43 @@ Fichier :
 .github/workflows/deploy-hf.yml
 ```
 
-Rôle :
+Le workflow CD synchronise le depot GitHub vers Hugging Face Spaces.
 
-- synchroniser le dépôt GitHub avec Hugging Face Spaces ;
-- déclencher automatiquement le rebuild Docker du Space ;
-- publier la dernière version stable de l'API.
+Declenchement actuel :
 
-Déclenchement :
+- `push` sur `main` ;
+- execution manuelle possible avec `workflow_dispatch`.
 
-- push sur `main` ;
-- exécution manuelle possible via `workflow_dispatch`.
+### Secret GitHub utilise
 
----
+```text
+HF_TOKEN
+```
 
-## Protection de la branche principale
+## Docker
 
-La branche `main` est protégée afin de garantir la stabilité de la version principale du projet.
+Le deploiement Hugging Face Spaces repose sur le
+[Dockerfile](/mnt/wslg/distro/home/maxime/projects/futurisys-ml-api/Dockerfile).
 
-Les règles mises en place sont les suivantes :
+Le conteneur :
 
-- toute modification doit passer par une Pull Request ;
-- le job GitHub Actions `test` doit réussir avant fusion ;
-- la branche de travail doit être à jour avec `main` avant le merge.
+- utilise `python:3.11-slim` ;
+- installe `libgomp1` pour LightGBM ;
+- installe les dependances depuis `requirements.txt` ;
+- lance Uvicorn sur le port `7860`.
 
-Cette configuration empêche l'intégration d'un code qui ne passe pas les tests automatiques.
+Commande executee dans le conteneur :
 
----
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 7860
+```
 
 ## Workflow Git
 
-Le projet suit une organisation simple des branches :
+Organisation actuelle des branches :
 
-- `main` : branche stable, utilisée pour le déploiement ;
-- `feature/*` : nouvelles fonctionnalités ;
+- `main` : branche stable deployee ;
+- `feature/*` : nouvelles fonctionnalites ;
 - `fix/*` : corrections ;
 - `docs/*` : documentation.
 
@@ -397,81 +313,34 @@ git checkout -b fix/hf-lightgbm-runtime
 git checkout -b docs/update-readme
 ```
 
-Les commits suivent une convention descriptive :
+Convention de messages de commit :
 
 ```text
-feat: ajout d'une fonctionnalité
+feat: ajout d'une fonctionnalite
 fix: correction d'un bug
 docs: modification de la documentation
 test: ajout ou modification de tests
 ci: modification de la configuration CI/CD
-chore: tâche technique ou maintenance
+chore: tache technique ou maintenance
 ```
 
----
+## Roadmap
 
-## Docker
+Les prochaines evolutions prevues du projet sont :
 
-Le déploiement Hugging Face Spaces repose sur Docker.
-
-Le `Dockerfile` :
-
-- utilise Python 3.11 ;
-- installe les dépendances système nécessaires à LightGBM ;
-- installe les dépendances Python depuis `requirements.txt`;
-- lance l'API avec Uvicorn sur le port `7860`.
-
-Commande équivalente exécutée dans le container :
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 7860
-```
-
----
-
-## Gestion des secrets
-
-Le déploiement vers Hugging Face utilise un token stocké dans les secrets GitHub Actions.
-
-Secret utilisé :
-
-```text
-HF_TOKEN
-```
-
-Ce token n'est pas versionné dans le dépôt. Il est uniquement utilisé par GitHub Actions pour synchroniser le dépôt vers Hugging Face Spaces.
-
----
-
-## Base de données PostgreSQL
-
-Une base PostgreSQL est prévue pour stocker les prédictions et historiser les appels au modèle.
-
-Les éléments liés à la base sont organisés dans :
-
-```text
-app/db/
-sql/
-scripts/
-```
-
-Cette partie permet de préparer l'extension du POC vers une architecture plus complète avec persistance des entrées, sorties et métadonnées de prédiction.
-
----
+- durcir davantage la validation Pydantic des entrees ;
+- ajouter la persistance PostgreSQL des inputs et outputs de prediction ;
+- enrichir les tests d'API et la couverture fonctionnelle ;
+- documenter le schema de base de donnees et le chargement du dataset.
 
 ## Statut du projet
 
-Fonctionnalités déjà mises en place :
+Fonctionnalites deja en place sur cette branche :
 
 - API FastAPI fonctionnelle ;
-- modèle ML chargé depuis un artefact Joblib ;
-- endpoint `/predict` opérationnel ;
-- documentation Swagger générée automatiquement ;
+- chargement du modele depuis un artefact Joblib ;
+- endpoint `/predict` operationnel ;
+- documentation Swagger generee automatiquement ;
 - tests Pytest ;
-- couverture de code ;
-- pipeline CI avec GitHub Actions ;
-- déploiement Docker sur Hugging Face Spaces ;
-- pipeline CD automatisé ;
-- protection de la branche `main`.
-
----
+- pipeline CI GitHub Actions ;
+- deploiement Docker sur Hugging Face Spaces.
