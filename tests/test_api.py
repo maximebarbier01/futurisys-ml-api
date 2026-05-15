@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
+from sqlalchemy.exc import SQLAlchemyError
 
+from app.api import routes
 from app.db.models import Employee, PredictionInputLog, PredictionOutputLog
 from app.main import app
 from app.schemas.prediction import PREDICTION_INPUT_EXAMPLE
@@ -72,6 +74,19 @@ def test_predict_logs_request_and_response(db_session):
     assert output_log.prediction in [0, 1]
     assert 0 <= output_log.probability <= 1
     assert output_log.label in ["attrition", "non_attrition"]
+
+
+def test_predict_success_without_database_tracking(monkeypatch, db_session):
+    def raise_db_error(*args, **kwargs):
+        raise SQLAlchemyError("database unavailable")
+
+    monkeypatch.setattr(routes, "find_matching_employee", raise_db_error)
+
+    response = client.post("/predict", json=get_valid_payload())
+
+    assert response.status_code == 200
+    assert db_session.query(PredictionInputLog).count() == 0
+    assert db_session.query(PredictionOutputLog).count() == 0
 
 
 def test_predict_missing_field():
