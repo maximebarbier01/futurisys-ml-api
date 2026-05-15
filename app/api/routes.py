@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -9,6 +9,7 @@ from app.db.repository import (
     create_prediction_input,
     create_prediction_output,
     find_matching_employee,
+    get_employee_by_id,
 )
 from app.schemas.prediction import PredictionInput, PredictionOutput
 from app.services.model_service import model_service
@@ -19,11 +20,19 @@ logger = logging.getLogger(__name__)
 
 @router.post("/predict", response_model=PredictionOutput)
 def predict(input_data: PredictionInput, db: Session = Depends(get_db)):
-    payload = input_data.model_dump()
+    payload = input_data.model_dump(exclude_none=True)
+    employee_id = payload.pop("employee_id", None)
     prediction_result = model_service.predict(payload)
 
     try:
-        employee = find_matching_employee(db, payload)
+        employee = None
+        if employee_id is not None:
+            employee = get_employee_by_id(db, employee_id)
+            if employee is None:
+                raise HTTPException(status_code=404, detail=f"Employee {employee_id} not found")
+        else:
+            employee = find_matching_employee(db, payload)
+
         prediction_input = create_prediction_input(
             db,
             payload,
@@ -36,6 +45,8 @@ def predict(input_data: PredictionInput, db: Session = Depends(get_db)):
             model_name=model_service.display_name,
             model_version=model_service.model_version,
         )
+    except HTTPException:
+        raise
     except SQLAlchemyError as exc:
         db.rollback()
         logger.warning(

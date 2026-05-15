@@ -62,7 +62,10 @@ def test_predict_logs_request_and_response(db_session):
     db_session.commit()
     db_session.refresh(employee)
 
-    response = client.post("/predict", json=get_valid_payload())
+    payload = get_valid_payload()
+    payload["employee_id"] = employee.id
+
+    response = client.post("/predict", json=payload)
 
     assert response.status_code == 200
 
@@ -74,6 +77,16 @@ def test_predict_logs_request_and_response(db_session):
     assert output_log.prediction in [0, 1]
     assert 0 <= output_log.probability <= 1
     assert output_log.label in ["attrition", "non_attrition"]
+
+
+def test_predict_unknown_employee_id_returns_404():
+    payload = get_valid_payload()
+    payload["employee_id"] = 999999
+
+    response = client.post("/predict", json=payload)
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Employee 999999 not found"}
 
 
 def test_predict_success_without_database_tracking(monkeypatch, db_session):

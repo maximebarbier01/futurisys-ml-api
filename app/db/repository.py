@@ -34,6 +34,10 @@ TRACKED_INPUT_FIELDS = (
 )
 
 
+def get_employee_by_id(db: Session, employee_id: int) -> Employee | None:
+    return db.query(Employee).filter_by(id=employee_id).first()
+
+
 def find_matching_employee(db: Session, input_data: dict) -> Employee | None:
     lookup = {field: input_data[field] for field in TRACKED_INPUT_FIELDS}
     return db.query(Employee).filter_by(**lookup).first()
