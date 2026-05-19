@@ -14,9 +14,18 @@ from app.db.repository import (
 from app.schemas.prediction import PredictionInput, PredictionOutput
 from app.services.model_service import model_service
 
+
+#************************
+#* Router et logs       *
+#************************
+
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+
+#************************
+#* Endpoint prediction  *
+#************************
 
 @router.post("/predict", response_model=PredictionOutput)
 def predict(input_data: PredictionInput, db: Session = Depends(get_db)):
@@ -26,10 +35,14 @@ def predict(input_data: PredictionInput, db: Session = Depends(get_db)):
 
     try:
         employee = None
+
         if employee_id is not None:
             employee = get_employee_by_id(db, employee_id)
             if employee is None:
-                raise HTTPException(status_code=404, detail=f"Employee {employee_id} not found")
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Employee {employee_id} not found",
+                )
         else:
             employee = find_matching_employee(db, payload)
 

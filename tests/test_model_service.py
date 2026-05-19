@@ -5,9 +5,10 @@ import pytest
 
 from app.services.model_service import ModelService
 
-#*******************
-#* Doubles de test *
-#*******************
+
+#********************************
+#* Doubles de test             *
+#********************************
 
 class DummyModel:
     def __init__(self, proba: float = 0.73):
@@ -16,9 +17,10 @@ class DummyModel:
     def predict_proba(self, X):
         return np.array([[1 - self.proba, self.proba]])
 
-#************************
-#* Creation de service  *
-#************************
+
+#********************************
+#* Fabrique de service         *
+#********************************
 
 def build_service(monkeypatch, proba: float = 0.73, threshold: float = 0.5):
     artifact = {
@@ -31,8 +33,9 @@ def build_service(monkeypatch, proba: float = 0.73, threshold: float = 0.5):
     monkeypatch.setattr(ModelService, "_load_artifact", lambda self: artifact)
     return ModelService(model_path=Path("dummy_model.joblib"))
 
+
 #********************************
-#* Tests de chargement modele   *
+#* Tests chargement artefact   *
 #********************************
 
 def test_load_artifact_missing_file_raises(tmp_path):
@@ -41,8 +44,9 @@ def test_load_artifact_missing_file_raises(tmp_path):
     with pytest.raises(FileNotFoundError):
         ModelService(model_path=missing_model)
 
+
 #********************************
-#* Tests de prediction proba    *
+#* Tests predict_proba         *
 #********************************
 
 def test_predict_proba_returns_float(monkeypatch):
@@ -60,7 +64,7 @@ def test_predict_proba_returns_float(monkeypatch):
 
 
 #********************************
-#* Tests de prediction globale  *
+#* Tests predict               *
 #********************************
 
 def test_predict_returns_expected_keys(monkeypatch):

@@ -9,9 +9,10 @@ from app.db.repository import (
 )
 from app.schemas.prediction import PREDICTION_INPUT_EXAMPLE
 
-#************************
-#* Fabrique de donnees  *
-#************************
+
+#********************************
+#* Fabrique de donnees         *
+#********************************
 
 def build_payload(**overrides):
     payload = deepcopy(PREDICTION_INPUT_EXAMPLE)
@@ -19,9 +20,9 @@ def build_payload(**overrides):
     return payload
 
 
-#*********************************
-#* Tests de lecture employees    *
-#*********************************
+#********************************
+#* Tests lecture employees     *
+#********************************
 
 def test_get_employee_by_id_returns_employee(db_session):
     employee = Employee(**build_payload())
@@ -64,9 +65,10 @@ def test_find_matching_employee_returns_none_when_no_match(db_session):
 
     assert result is None
 
-#*********************************
-#* Tests de prediction_inputs    *
-#*********************************
+
+#********************************
+#* Tests prediction_inputs      *
+#********************************
 
 def test_create_prediction_input_with_employee_id(db_session):
     employee = Employee(**build_payload())
@@ -91,9 +93,10 @@ def test_create_prediction_input_without_employee_id(db_session):
     assert prediction_input.id is not None
     assert prediction_input.employee_id is None
 
-#**********************************
-#* Tests de prediction_outputs    *
-#**********************************
+
+#********************************
+#* Tests prediction_outputs     *
+#********************************
 
 def test_create_prediction_output_persists_all_fields(db_session):
     prediction_input = create_prediction_input(db_session, build_payload())
