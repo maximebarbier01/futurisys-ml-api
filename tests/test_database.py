@@ -3,9 +3,9 @@ import pytest
 from app.db import database
 
 
-#************************
-#* Double de session    *
-#************************
+#********************************
+#* Double de session           *
+#********************************
 
 class DummySession:
     def __init__(self):
@@ -15,9 +15,9 @@ class DummySession:
         self.closed = True
 
 
-#***************************
-#* Tests du cycle get_db() *
-#***************************
+#********************************
+#* Tests cycle get_db()        *
+#********************************
 
 def test_get_db_yields_a_session(monkeypatch):
     session = DummySession()

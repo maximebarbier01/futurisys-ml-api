@@ -5,8 +5,16 @@ import joblib
 import pandas as pd
 
 
+#************************
+#* Constante modele     *
+#************************
+
 MODEL_PATH = Path(__file__).resolve().parents[2] / "model" / "final_model.joblib"
 
+
+#************************
+#* Service de modele    *
+#************************
 
 class ModelService:
     def __init__(self, model_path: Path = MODEL_PATH):
@@ -41,5 +49,9 @@ class ModelService:
             "label": "attrition" if prediction == 1 else "non_attrition",
         }
 
+
+#************************
+#* Instance partagee    *
+#************************
 
 model_service = ModelService()

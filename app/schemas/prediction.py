@@ -3,6 +3,10 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 
+#************************
+#* Exemple de payload   *
+#************************
+
 PREDICTION_INPUT_EXAMPLE = {
     "age": 38,
     "revenu_mensuel": 5400,
@@ -33,6 +37,10 @@ PREDICTION_INPUT_EXAMPLE = {
     "frequence_deplacement": "Occasionnel",
 }
 
+
+#************************
+#* Schema input         *
+#************************
 
 class PredictionInput(BaseModel):
     model_config = ConfigDict(json_schema_extra={"example": PREDICTION_INPUT_EXAMPLE})
@@ -108,6 +116,10 @@ class PredictionInput(BaseModel):
         "Occasionnel",
     ]
 
+
+#************************
+#* Schema output        *
+#************************
 
 class PredictionOutput(BaseModel):
     prediction: Literal[0, 1]

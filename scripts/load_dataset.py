@@ -6,6 +6,11 @@ import pandas as pd
 from app.db.database import SessionLocal
 from app.db.models import Employee
 
+
+#************************
+#* Colonnes attendues   *
+#************************
+
 EXPECTED_COLUMNS = [
     "age",
     "revenu_mensuel",
@@ -60,6 +65,7 @@ INT_COLUMNS = [
 ]
 
 FLOAT_COLUMNS = ["augementation_salaire_precedente"]
+
 TEXT_COLUMNS = [
     "genre",
     "statut_marital",
@@ -70,9 +76,17 @@ TEXT_COLUMNS = [
 ]
 
 
+#************************
+#* Parsing CLI          *
+#************************
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Load the HR dataset into PostgreSQL.")
-    parser.add_argument("--csv-path", required=True, help="Path to the CSV dataset to import.")
+    parser.add_argument(
+        "--csv-path",
+        required=True,
+        help="Path to the CSV dataset to import.",
+    )
     parser.add_argument(
         "--truncate",
         action="store_true",
@@ -80,6 +94,10 @@ def parse_args():
     )
     return parser.parse_args()
 
+
+#************************
+#* Validation dataset   *
+#************************
 
 def validate_dataset(df: pd.DataFrame) -> pd.DataFrame:
     missing_columns = [column for column in EXPECTED_COLUMNS if column not in df.columns]
@@ -103,6 +121,10 @@ def validate_dataset(df: pd.DataFrame) -> pd.DataFrame:
 
     return dataset
 
+
+#************************
+#* Import principal     *
+#************************
 
 def main():
     args = parse_args()
@@ -128,6 +150,10 @@ def main():
     finally:
         db.close()
 
+
+#************************
+#* Point d'entree       *
+#************************
 
 if __name__ == "__main__":
     main()
