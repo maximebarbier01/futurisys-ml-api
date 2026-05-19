@@ -3,6 +3,10 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 
+#************************
+#* Exemple de payload   *
+#************************
+
 PREDICTION_INPUT_EXAMPLE = {
     "age": 38,
     "revenu_mensuel": 5400,
@@ -26,7 +30,7 @@ PREDICTION_INPUT_EXAMPLE = {
     "annees_depuis_la_derniere_promotion": 1,
     "annes_sous_responsable_actuel": 2,
     "genre": "M",
-    "statut_marital": "Marié(e)",
+    "statut_marital": "Mari\u00e9(e)",
     "departement": "Consulting",
     "poste": "Consultant",
     "domaine_etude": "Transformation Digitale",
@@ -34,9 +38,18 @@ PREDICTION_INPUT_EXAMPLE = {
 }
 
 
+#************************
+#* Schema input         *
+#************************
+
 class PredictionInput(BaseModel):
     model_config = ConfigDict(json_schema_extra={"example": PREDICTION_INPUT_EXAMPLE})
 
+    employee_id: int | None = Field(
+        default=None,
+        ge=1,
+        description="Optional identifier of an existing employee for traceability.",
+    )
     age: int = Field(..., ge=18, le=70)
     revenu_mensuel: int = Field(..., ge=0, le=50000)
     nombre_experiences_precedentes: int = Field(..., ge=0, le=20)
@@ -65,9 +78,9 @@ class PredictionInput(BaseModel):
     genre: Literal["F", "M"]
 
     statut_marital: Literal[
-        "Célibataire",
-        "Divorcé(e)",
-        "Marié(e)",
+        "C\u00e9libataire",
+        "Divorc\u00e9(e)",
+        "Mari\u00e9(e)",
     ]
 
     departement: Literal[
@@ -82,7 +95,7 @@ class PredictionInput(BaseModel):
         "Consultant",
         "Directeur Technique",
         "Manager",
-        "Représentant Commercial",
+        "Repr\u00e9sentant Commercial",
         "Ressources Humaines",
         "Senior Manager",
         "Tech Lead",
@@ -103,6 +116,10 @@ class PredictionInput(BaseModel):
         "Occasionnel",
     ]
 
+
+#************************
+#* Schema output        *
+#************************
 
 class PredictionOutput(BaseModel):
     prediction: Literal[0, 1]

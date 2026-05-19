@@ -6,9 +6,17 @@ from sqlalchemy.orm import relationship
 from app.db.database import Base
 
 
+#************************
+#* Utilitaire dates     *
+#************************
+
 def utc_now() -> datetime:
     return datetime.now(UTC)
 
+
+#************************
+#* Table employees      *
+#************************
 
 class Employee(Base):
     __tablename__ = "employees"
@@ -51,6 +59,10 @@ class Employee(Base):
 
     prediction_inputs = relationship("PredictionInputLog", back_populates="employee")
 
+
+#**********************************
+#* Table prediction_inputs        *
+#**********************************
 
 class PredictionInputLog(Base):
     __tablename__ = "prediction_inputs"
@@ -99,6 +111,10 @@ class PredictionInputLog(Base):
         uselist=False,
     )
 
+
+#***********************************
+#* Table prediction_outputs        *
+#***********************************
 
 class PredictionOutputLog(Base):
     __tablename__ = "prediction_outputs"
