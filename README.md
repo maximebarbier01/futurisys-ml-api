@@ -8,31 +8,112 @@ app_port: 7860
 pinned: false
 ---
 
+<a id="readme-top"></a>
+
 # Futurisys ML API
 
-## Presentation
+Proof of Concept realise dans le cadre du parcours OpenClassrooms pour deployer
+un modele de machine learning via une API FastAPI, avec validation, tests,
+traceabilite locale en base et deploiement automatise.
 
-Ce projet est un Proof of Concept realise dans le cadre du parcours OpenClassrooms.
+## Table des matieres
 
-L'objectif est de deployer un modele de machine learning issu du projet
-**"Classifier automatiquement des informations"** afin de le rendre exploitable
-via une API FastAPI, testable localement et deployable sur Hugging Face Spaces.
+- [A propos du projet](#a-propos-du-projet)
+- [Architecture](#architecture)
+- [Stack technique](#stack-technique)
+- [Demarrage rapide](#demarrage-rapide)
+- [Base de donnees PostgreSQL](#base-de-donnees-postgresql)
+- [Utilisation de l'API](#utilisation-de-lapi)
+- [Documentation du modele](#documentation-du-modele)
+- [Tests](#tests)
+- [CI/CD et deploiement](#cicd-et-deploiement)
+- [Traceabilite des predictions](#traceabilite-des-predictions)
+- [Limites et ameliorations](#limites-et-ameliorations)
+- [Auteur](#auteur)
 
-L'API predit le risque d'attrition d'un collaborateur a partir de donnees RH.
+## A propos du projet
+
+Ce projet a pour objectif de rendre exploitable en production un modele de
+machine learning issu du projet OpenClassrooms
+**"Classifier automatiquement des informations"**.
+
+L'API predit le risque d'attrition d'un collaborateur a partir de variables RH.
 Le modele est charge depuis un artefact Joblib deja entraine, puis expose via
 une interface REST documentee avec Swagger/OpenAPI.
 
-## Fonctionnalites principales
+Le projet couvre :
 
-- API FastAPI avec les endpoints `/`, `/health` et `/predict`
-- Validation forte des payloads avec Pydantic
-- Chargement du modele depuis `model/final_model.joblib`
-- Traceabilite locale des appels dans PostgreSQL
-- Import du dataset RH dans une table `employees`
-- Tests unitaires et fonctionnels avec Pytest
-- Rapport de couverture via `pytest-cov`
-- CI avec GitHub Actions
-- CD vers Hugging Face Spaces via Docker
+- l'exposition du modele via FastAPI ;
+- la validation des entrees avec Pydantic ;
+- la persistance locale dans PostgreSQL ;
+- les tests unitaires et fonctionnels avec Pytest ;
+- l'integration continue avec GitHub Actions ;
+- le deploiement sur Hugging Face Spaces via Docker.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Architecture
+
+```text
+Client
+  ↓
+FastAPI
+  ↓
+Validation Pydantic
+  ↓
+Service ML
+  ↓
+Modele Joblib
+  ↓
+Reponse API
+
+En parallele :
+  - journalisation des inputs dans PostgreSQL
+  - journalisation des outputs dans PostgreSQL
+```
+
+Structure principale du projet :
+
+```text
+futurisys-ml-api/
+├── app/
+│   ├── api/
+│   │   └── routes.py
+│   ├── db/
+│   │   ├── database.py
+│   │   ├── models.py
+│   │   └── repository.py
+│   ├── schemas/
+│   │   └── prediction.py
+│   ├── services/
+│   │   └── model_service.py
+│   └── main.py
+├── docs/
+│   └── database_schema.md
+│   └── model_documentation.md
+├── model/
+│   └── final_model.joblib
+├── scripts/
+│   ├── create_db.py
+│   └── load_dataset.py
+├── sql/
+│   └── schema.sql
+├── tests/
+│   ├── data/
+│   ├── conftest.py
+│   ├── test_api.py
+│   ├── test_database.py
+│   ├── test_model_service.py
+│   └── test_repository.py
+├── .github/workflows/
+│   ├── ci.yml
+│   └── deploy-hf.yml
+├── Dockerfile
+├── pyproject.toml
+└── README.md
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Stack technique
 
@@ -47,140 +128,98 @@ une interface REST documentee avec Swagger/OpenAPI.
 - Joblib
 - Pytest
 - Pytest-cov
-- GitHub Actions
 - Docker
+- GitHub Actions
 - Hugging Face Spaces
 
-## Structure du projet
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-```text
-futurisys-ml-api/
-|- app/
-|  |- api/
-|  |  `- routes.py
-|  |- db/
-|  |  |- database.py
-|  |  |- models.py
-|  |  `- repository.py
-|  |- schemas/
-|  |  `- prediction.py
-|  |- services/
-|  |  `- model_service.py
-|  `- main.py
-|- docs/
-|  `- database_schema.md
-|- model/
-|  `- final_model.joblib
-|- scripts/
-|  |- create_db.py
-|  `- load_dataset.py
-|- sql/
-|  `- schema.sql
-|- tests/
-|  |- data/
-|  |- conftest.py
-|  |- test_api.py
-|  |- test_database.py
-|  |- test_model_service.py
-|  `- test_repository.py
-|- .github/
-|  `- workflows/
-|     |- ci.yml
-|     `- deploy-hf.yml
-|- Dockerfile
-|- README.md
-|- pyproject.toml
-|- poetry.lock
-|- requirements.txt
-`- requirements-dev.txt
-```
+## Demarrage rapide
 
-## Modele de machine learning
+### Prerequis
 
-Le modele final est stocke dans :
+- Python 3.11
+- Conda ou un environnement virtuel Python
+- Poetry
+- PostgreSQL en local
+- Git
 
-```text
-model/final_model.joblib
-```
+### Installation
 
-L'artefact contient :
-
-- le pipeline de prediction ;
-- le seuil de decision metier ;
-- la liste des variables attendues en entree ;
-- les metadonnees de version du modele.
-
-L'API ne reentraine pas le modele. Elle charge simplement l'artefact au
-demarrage, transforme la requete JSON en `DataFrame` pandas, puis renvoie une
-prediction binaire accompagnee de sa probabilite.
-
-## Installation locale
-
-### 1. Cloner le depot
+1. Cloner le depot
 
 ```bash
 git clone git@github.com:maximebarbier01/futurisys-ml-api.git
 cd futurisys-ml-api
 ```
 
-### 2. Creer et activer un environnement Python 3.11
-
-Avec Conda :
+2. Creer l'environnement Python
 
 ```bash
 conda create -n futurisys-ml-api python=3.11 -y
 conda activate futurisys-ml-api
 ```
 
-### 3. Installer les dependances avec Poetry
+3. Installer les dependances
 
 ```bash
 poetry env use $(which python)
 poetry install
 ```
 
-### 4. Regenerer les fichiers requirements si necessaire
+4. Regenerer les fichiers `requirements` si necessaire
 
 ```bash
 poetry export -f requirements.txt --output requirements.txt --without-hashes
 poetry export --with dev -f requirements.txt --output requirements-dev.txt --without-hashes
 ```
 
-## Configuration locale
+### Configuration
 
 Le projet lit la variable `DATABASE_URL` depuis un fichier `.env`.
 
-### `.env.example`
+Exemple de `.env.example` :
 
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/futurisys_ml_api
 ```
 
-### Exemple de `.env` local
+Exemple de `.env` local :
 
 ```env
 DATABASE_URL=postgresql://futurisys_user:futurisys_password@localhost:5432/futurisys_ml_api
 ```
 
-Si ton mot de passe contient `@`, il faut l'encoder dans l'URL. Exemple :
+Si ton mot de passe contient `@`, il faut l'encoder dans l'URL, par exemple
+`%40`.
 
-```env
-DATABASE_URL=postgresql://futurisys_user:%40udrey29Le@localhost:5432/futurisys_ml_api
+### Lancer l'API
+
+```bash
+uvicorn app.main:app --reload
 ```
 
-## Base PostgreSQL locale
+Acces local :
 
-L'interaction avec PostgreSQL est prevue pour un usage local dans ce POC.
+- `http://127.0.0.1:8000`
+- `http://127.0.0.1:8000/docs`
+- `http://127.0.0.1:8000/openapi.json`
+- `http://127.0.0.1:8000/health`
 
-### 1. Demarrer PostgreSQL
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Base de donnees PostgreSQL
+
+Le projet utilise PostgreSQL en local pour :
+
+- stocker le dataset RH importe ;
+- tracer les inputs envoyes au modele ;
+- tracer les outputs produits par le modele.
+
+### Creation de la base
 
 ```bash
 sudo service postgresql start
-```
-
-### 2. Creer la base et l'utilisateur
-
-```bash
 sudo -u postgres psql
 ```
 
@@ -193,82 +232,48 @@ GRANT ALL PRIVILEGES ON DATABASE futurisys_ml_api TO futurisys_user;
 \q
 ```
 
-### 3. Creer les tables
+### Creation des tables
 
 ```bash
 python scripts/create_db.py
 ```
 
-### 4. Importer le dataset RH
+### Import du dataset
 
 ```bash
 python scripts/load_dataset.py --csv-path /path/to/data_eda.csv --truncate
 ```
 
-### 5. Schema de base de donnees
+### Schema de base
 
 - documentation : `docs/database_schema.md`
 - version SQL : `sql/schema.sql`
 
-## Traceabilite des predictions
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-Le schema PostgreSQL repose sur trois tables principales :
+## Utilisation de l'API
 
-- `employees` : dataset RH importe en base
-- `prediction_inputs` : payloads envoyes au modele
-- `prediction_outputs` : resultats retournes par le modele
-
-Workflow de traceabilite :
-
-1. Le dataset source est charge dans `employees`.
-2. Un appel API vers `/predict` cree une ligne dans `prediction_inputs`.
-3. Le resultat de prediction est stocke dans `prediction_outputs`.
-4. Si `employee_id` est fourni dans le payload, il est utilise pour relier la prediction a `employees`.
-5. Si `employee_id` n'est pas fourni, l'API tente un matching exact sur les variables du payload.
-
-## Lancer l'API en local
-
-```bash
-uvicorn app.main:app --reload
-```
-
-L'API est alors disponible sur :
-
-- `http://127.0.0.1:8000`
-- `http://127.0.0.1:8000/docs`
-- `http://127.0.0.1:8000/openapi.json`
-- `http://127.0.0.1:8000/health`
-
-## Endpoints disponibles
+### Endpoints disponibles
 
 | Methode | Endpoint | Description |
 |---|---|---|
-| `GET` | `/` | Verifie que l'API est accessible |
-| `GET` | `/health` | Verifie l'etat de sante de l'API |
+| `GET` | `/` | Verifie que l'API repond |
+| `GET` | `/health` | Verifie l'etat de sante |
 | `POST` | `/predict` | Retourne une prediction d'attrition |
 
-## Validation des donnees
+### Documentation interactive
 
-Le payload attendu est defini dans `app/schemas/prediction.py` via un schema
-Pydantic.
+La documentation Swagger/OpenAPI est disponible ici :
 
-Le schema :
+- local : `http://127.0.0.1:8000/docs`
+- deployee : [mxmbrbr-futurisys-ml-api.hf.space/docs](https://mxmbrbr-futurisys-ml-api.hf.space/docs)
 
-- impose les champs obligatoires ;
-- verifie les types numeriques ;
-- controle les bornes metier ;
-- restreint certaines categories avec `Literal[...]` ;
-- accepte un `employee_id` optionnel pour tracer une prediction sur un employe existant.
-
-La documentation Swagger propose un exemple complet d'entree pour faciliter les
-tests manuels.
-
-## Exemple d'appel local a l'API
-
-Exemple de requete avec `curl` :
+### Exemple de requete
 
 ```bash
-curl -X POST "http://127.0.0.1:8000/predict"   -H "Content-Type: application/json"   -d '{
+curl -X POST "http://127.0.0.1:8000/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
     "age": 38,
     "revenu_mensuel": 5400,
     "nombre_experiences_precedentes": 3,
@@ -291,7 +296,7 @@ curl -X POST "http://127.0.0.1:8000/predict"   -H "Content-Type: application/jso
     "annees_depuis_la_derniere_promotion": 1,
     "annes_sous_responsable_actuel": 2,
     "genre": "M",
-    "statut_marital": "Mari\u00e9(e)",
+    "statut_marital": "Mari?(e)",
     "departement": "Consulting",
     "poste": "Consultant",
     "domaine_etude": "Transformation Digitale",
@@ -299,7 +304,7 @@ curl -X POST "http://127.0.0.1:8000/predict"   -H "Content-Type: application/jso
   }'
 ```
 
-Exemple de reponse :
+### Exemple de reponse
 
 ```json
 {
@@ -310,50 +315,81 @@ Exemple de reponse :
 }
 ```
 
-## Deploiement sur Hugging Face Spaces
+### Validation des entrees
 
-L'application est deployee sur Hugging Face Spaces via Docker :
+Le schema Pydantic :
 
-- application : [mxmbrbr-futurisys-ml-api.hf.space](https://mxmbrbr-futurisys-ml-api.hf.space)
-- Swagger : [mxmbrbr-futurisys-ml-api.hf.space/docs](https://mxmbrbr-futurisys-ml-api.hf.space/docs)
-- health check : [mxmbrbr-futurisys-ml-api.hf.space/health](https://mxmbrbr-futurisys-ml-api.hf.space/health)
+- verifie les champs obligatoires ;
+- controle les types ;
+- impose des bornes metier ;
+- restreint certaines categories avec `Literal[...]` ;
+- accepte un `employee_id` optionnel pour lier une prediction a un employe existant.
 
-Le deploiement est automatise depuis GitHub Actions lors d'un `push` sur `main`.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Comportement sur Hugging Face
+## Documentation du modele
 
-Le Space peut fonctionner sans PostgreSQL disponible. Dans ce cas :
+### Role du modele
 
-- `/predict` continue de retourner une prediction ;
-- la persistance dans `prediction_inputs` et `prediction_outputs` est ignoree ;
-- la traceabilite complete reste donc reservee a l'execution locale ou a un deploiement avec une base PostgreSQL accessible.
+Le modele realise une **classification binaire** :
 
-## Docker
+- `0` : `non_attrition`
+- `1` : `attrition`
 
-Le deploiement Hugging Face Spaces repose sur le `Dockerfile` du projet.
+### Artefact deploye
 
-Le conteneur :
+Le modele final est charge depuis :
 
-- utilise `python:3.11-slim` ;
-- installe `libgomp1` pour LightGBM ;
-- installe les dependances depuis `requirements.txt` ;
-- lance Uvicorn sur le port `7860`.
-
-Commande executee dans le conteneur :
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 7860
+```text
+model/final_model.joblib
 ```
+
+Cet artefact contient :
+
+- le pipeline de prediction ;
+- le seuil de decision metier ;
+- la liste des variables attendues en entree ;
+- les eventuelles metadonnees de version.
+
+### Sortie du modele
+
+L'API retourne toujours quatre informations :
+
+- `prediction` : classe finale ;
+- `probability` : probabilite de la classe positive ;
+- `threshold` : seuil applique ;
+- `label` : libelle metier associe.
+
+### Maintenance du modele
+
+Protocole recommande pour une mise a jour :
+
+1. mettre a jour le dataset source ;
+2. relancer la preparation et l'entrainement ;
+3. recalculer les metriques de performance ;
+4. valider ou ajuster le seuil metier ;
+5. exporter un nouvel artefact `final_model.joblib` ;
+6. relancer la suite de tests ;
+7. redeployer l'API.
+
+### Performances
+
+Ce depot contient l'artefact deploye et toute la couche d'exposition de l'API.
+Les metriques detaillees du modele doivent etre reprises depuis le travail de
+modelisation du projet P4 si tu veux les afficher dans une documentation plus
+complete ou dans le support de soutenance.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Tests
 
 Le projet contient des tests unitaires et fonctionnels :
 
-- `tests/test_api.py` : tests fonctionnels API
-- `tests/test_model_service.py` : tests unitaires du service ML
-- `tests/test_repository.py` : tests unitaires de la couche repository
-- `tests/test_database.py` : tests du cycle de vie de la session DB
-- `tests/data/` : payloads valides, invalides et cas metier
+- `tests/test_api.py` : tests fonctionnels API ;
+- `tests/test_model_service.py` : tests unitaires du service ML ;
+- `tests/test_repository.py` : tests unitaires de la couche repository ;
+- `tests/test_database.py` : tests du cycle de vie de la session DB ;
+- `tests/data/` : jeux de donnees de test.
 
 ### Lancer les tests
 
@@ -361,63 +397,53 @@ Le projet contient des tests unitaires et fonctionnels :
 pytest
 ```
 
-### Couverture simple
+### Lancer les tests avec couverture
 
 ```bash
 pytest --cov=app --cov-report=term-missing tests/
 ```
 
-### Rapports de couverture HTML et XML
+### Generer les rapports HTML et XML
 
 ```bash
 pytest --cov=app --cov-report=term-missing --cov-report=html --cov-report=xml tests/
 ```
 
-Les rapports generes sont :
+Rapports generes :
 
 - `htmlcov/`
 - `coverage.xml`
 
-Sur cette branche, la suite contient actuellement 29 tests et couvre 100 % du
-package `app`.
+Etat actuel :
 
-## CI/CD
+- 29 tests
+- 100% de couverture sur `app`
 
-Le projet utilise deux workflows GitHub Actions.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## CI/CD et deploiement
 
 ### Integration continue
 
-Fichier :
+Workflow : `/.github/workflows/ci.yml`
 
-```text
-.github/workflows/ci.yml
-```
+Fonctionnement :
 
-Le workflow CI :
-
+- declenche sur `push` vers toutes les branches ;
+- declenche sur `pull_request` vers `main` et `develop` ;
 - installe Python 3.11 ;
-- installe les dependances depuis `requirements-dev.txt` ;
-- execute Pytest ;
-- verifie une couverture minimale de 70 %.
-
-Declenchement actuel :
-
-- `push` sur toutes les branches ;
-- `pull_request` vers `main` et `develop`.
+- installe les dependances ;
+- lance Pytest avec couverture minimale.
 
 ### Deploiement continu
 
-Fichier :
+Workflow : `/.github/workflows/deploy-hf.yml`
 
-```text
-.github/workflows/deploy-hf.yml
-```
+Fonctionnement :
 
-Le workflow CD :
-
-- se declenche sur `push` vers `main` ;
-- peut aussi etre lance manuellement avec `workflow_dispatch` ;
-- synchronise le depot GitHub vers Hugging Face Spaces.
+- declenche sur `push` vers `main` ;
+- declenchable manuellement avec `workflow_dispatch` ;
+- synchronise le depot vers Hugging Face Spaces.
 
 ### Secret GitHub utilise
 
@@ -425,56 +451,55 @@ Le workflow CD :
 HF_TOKEN
 ```
 
-## Workflow Git
+### Deploiement Hugging Face
 
-Organisation actuelle des branches :
+- application : [mxmbrbr-futurisys-ml-api.hf.space](https://mxmbrbr-futurisys-ml-api.hf.space)
+- Swagger : [mxmbrbr-futurisys-ml-api.hf.space/docs](https://mxmbrbr-futurisys-ml-api.hf.space/docs)
+- health check : [mxmbrbr-futurisys-ml-api.hf.space/health](https://mxmbrbr-futurisys-ml-api.hf.space/health)
 
-- `main` : branche stable deployee
-- `develop` : branche d'integration
-- `feature/*` : nouvelles fonctionnalites
-- `fix/*` : corrections
-- `docs/*` : documentation
-- `style/*` : harmonisation visuelle et lisibilite du code
+### Comportement sur Hugging Face
 
-Exemples :
+Le Space peut fonctionner sans PostgreSQL disponible. Dans ce cas :
 
-```bash
-git switch -c feature/api-fastapi
-git switch -c feature/postgresql-tracking
-git switch -c fix/hf-predict-without-db
-git switch -c docs/update-readme
-git switch -c style/code-clarity-sections
-```
+- `/predict` continue de retourner une prediction ;
+- la persistance dans `prediction_inputs` et `prediction_outputs` est ignoree ;
+- la traceabilite complete reste reservee a l'execution locale ou a un deploiement avec une base PostgreSQL accessible.
 
-Convention de messages de commit :
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-```text
-feat: ajout d'une fonctionnalite
-fix: correction d'un bug
-docs: modification de la documentation
-refactor: amelioration de la structure du code sans changement fonctionnel
-test: ajout ou modification de tests
-ci: modification de la configuration CI/CD
-chore: tache technique ou maintenance
-```
+## Traceabilite des predictions
 
-## Limites connues
+Le projet garantit une traceabilite locale des inferences :
 
-- PostgreSQL est pense pour un usage local dans ce POC.
-- Le Space Hugging Face n'offre pas de traceabilite PostgreSQL complete sans base externe configuree.
-- Il n'y a pas encore d'authentification API dediee.
-- Un endpoint du type `/predict/by-employee/{employee_id}` pourrait etre ajoute plus tard pour simplifier les usages relies a la base.
+- les donnees source sont stockees dans `employees` ;
+- chaque payload recu par `/predict` est stocke dans `prediction_inputs` ;
+- chaque resultat retourne est stocke dans `prediction_outputs`.
 
-## Statut du projet
+Si `employee_id` est fourni dans le payload :
 
-Fonctionnalites deja en place sur cette branche :
+- la prediction est liee directement a l'employe concerne.
 
-- API FastAPI fonctionnelle ;
-- chargement du modele depuis un artefact Joblib ;
-- endpoint `/predict` operationnel ;
-- validation robuste avec Pydantic ;
-- persistance PostgreSQL locale des predictions ;
-- documentation Swagger generee automatiquement ;
-- tests unitaires et fonctionnels ;
-- pipeline CI GitHub Actions ;
-- deploiement Docker sur Hugging Face Spaces.
+Sinon :
+
+- l'API tente un matching exact avec les donnees deja presentes en base.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Limites et ameliorations
+
+- PostgreSQL est prevu principalement pour un usage local dans ce POC.
+- Hugging Face Spaces ne garantit pas une traceabilite PostgreSQL complete sans base externe.
+- L'API ne gere pas encore d'authentification dediee.
+- Un endpoint `/predict/by-employee/{employee_id}` pourrait etre ajoute plus tard.
+- Le protocole de reentrainement du modele peut encore etre davantage automatise.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Auteur
+
+Maxime Barbier
+
+Projet GitHub :
+[https://github.com/maximebarbier01/futurisys-ml-api](https://github.com/maximebarbier01/futurisys-ml-api)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
