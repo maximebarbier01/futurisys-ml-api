@@ -2,12 +2,12 @@
 
 ## Overview
 
-The PostgreSQL layer stores:
-- the imported HR dataset in `employees`;
-- every API payload sent to the model in `prediction_inputs`;
-- every prediction returned by the model in `prediction_outputs`.
+La couche PostgreSQL layer comprend:
+- l'ensemble de données RH importé dans `employees` ;
+- chaque charge utile (payload) API envoyée au modèle dans `prediction_inputs` ;
+- chaque prédiction renvoyée par le modèle dans `prediction_outputs`.
 
-This ensures full traceability between the source data, the model input, and the generated prediction.
+Cela garantit une traçabilité totale entre les données sources, les entrées du modèle et la prédiction générée.
 
 ## ER Diagram
 
@@ -94,34 +94,34 @@ erDiagram
     }
 ```
 
-## Files
+## Fichiers
 
-- `app/db/database.py`: SQLAlchemy engine, session and dependency injection
-- `app/db/models.py`: ORM models
-- `app/db/repository.py`: persistence helpers for prediction logs
-- `scripts/create_db.py`: creates the database tables
-- `scripts/load_dataset.py`: imports the HR dataset into `employees`
-- `sql/schema.sql`: SQL version of the schema
+- `app/db/database.py`: moteur SQLAlchemy, session et injection de dépendances
+- `app/db/models.py`: modèles ORM 
+- `app/db/repository.py`: aides à la persistance pour les journaux de prédiction
+- `scripts/create_db.py`: crée les tables de la base de données
+- `scripts/load_dataset.py`: importe l'ensemble de données RH dans `employees`
+- `sql/schema.sql`: version SQL du schéma
 
-## Typical Commands
+## Commandes de lancement
 
-Create tables:
+Création des tables:
 
 ```bash
 python scripts/create_db.py
 ```
 
-Load the dataset into PostgreSQL:
+Chargement de l'ensemble de données dans PostgreSQL :
 
 ```bash
 python scripts/load_dataset.py --csv-path /path/to/dataset.csv --truncate
 ```
 
-## Traceability Workflow
+## Flux de travail de traçabilité
 
-1. A dataset row is stored in `employees`.
-2. A prediction request sent to `/predict` is stored in `prediction_inputs`.
-3. If the payload matches a row already present in `employees`, the API links `prediction_inputs.employee_id` to that source row.
-4. The model output is stored in `prediction_outputs`.
+1. Une ligne de l'ensemble de données est stockée dans `employees`.
+2. Une requête de prédiction envoyée à `/predict` est stockée dans `prediction_inputs`.
+3. Si le contenu de la requête correspond à une ligne déjà présente dans `employees`, l'API relie `prediction_inputs.employee_id` à cette ligne source.
+4. La sortie du modèle est stockée dans `prediction_outputs`.
 
-This creates a complete audit trail of the ML inference pipeline.
+Cela crée une piste d'audit complète du pipeline d'inférence ML.
