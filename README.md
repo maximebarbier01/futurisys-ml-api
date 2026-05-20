@@ -89,7 +89,7 @@ futurisys-ml-api/
 │   │   └── model_service.py
 │   └── main.py
 ├── docs/
-│   └── database_schema.md
+│   ├── database_schema.md
 │   └── model_documentation.md
 ├── model/
 │   └── final_model.joblib
