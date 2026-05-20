@@ -16,6 +16,10 @@ from app.db.models import Base
 from app.main import app
 
 
+#********************************
+#* Configuration environnement  *
+#********************************
+
 TEST_DATABASE_URL = "sqlite://"
 
 engine = create_engine(
@@ -23,8 +27,17 @@ engine = create_engine(
     connect_args={"check_same_thread": False},
     poolclass=StaticPool,
 )
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+TestingSessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+)
+
+
+#********************************
+#* Fixtures de base de donnees  *
+#********************************
 
 @pytest.fixture(autouse=True)
 def override_db():

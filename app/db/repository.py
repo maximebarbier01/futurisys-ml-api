@@ -3,6 +3,10 @@ from sqlalchemy.orm import Session
 from app.db.models import Employee, PredictionInputLog, PredictionOutputLog
 
 
+#************************
+#* Champs de matching   *
+#************************
+
 TRACKED_INPUT_FIELDS = (
     "age",
     "revenu_mensuel",
@@ -34,10 +38,22 @@ TRACKED_INPUT_FIELDS = (
 )
 
 
+#************************
+#* Lecture employees    *
+#************************
+
+def get_employee_by_id(db: Session, employee_id: int) -> Employee | None:
+    return db.query(Employee).filter_by(id=employee_id).first()
+
+
 def find_matching_employee(db: Session, input_data: dict) -> Employee | None:
     lookup = {field: input_data[field] for field in TRACKED_INPUT_FIELDS}
     return db.query(Employee).filter_by(**lookup).first()
 
+
+#******************************
+#* Ecriture prediction input  *
+#******************************
 
 def create_prediction_input(
     db: Session,
@@ -50,6 +66,10 @@ def create_prediction_input(
     db.refresh(prediction_input)
     return prediction_input
 
+
+#*******************************
+#* Ecriture prediction output  *
+#*******************************
 
 def create_prediction_output(
     db: Session,
