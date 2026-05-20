@@ -244,4 +244,3 @@ Des évolutions possibles sont :
 - historiser les versions du modèle plus finement
 - exposer un endpoint dédié du type `/predict/by-employee/{employee_id}`
 - intégrer un monitoring plus avancé en production
-```
