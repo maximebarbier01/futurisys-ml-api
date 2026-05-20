@@ -296,7 +296,7 @@ curl -X POST "http://127.0.0.1:8000/predict" \
     "annees_depuis_la_derniere_promotion": 1,
     "annes_sous_responsable_actuel": 2,
     "genre": "M",
-    "statut_marital": "Mari?(e)",
+    "statut_marital": "Marié(e)",
     "departement": "Consulting",
     "poste": "Consultant",
     "domaine_etude": "Transformation Digitale",
