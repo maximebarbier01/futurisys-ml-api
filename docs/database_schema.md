@@ -2,12 +2,12 @@
 
 ## Overview
 
-La couche PostgreSQL layer comprend:
-- l'ensemble de données RH importé dans `employees` ;
-- chaque charge utile (payload) API envoyée au modèle dans `prediction_inputs` ;
+La couche PostgreSQL comprend :
+- le dataset RH importé dans `employees` ;
+- chaque payload API envoyé au modèle dans `prediction_inputs` ;
 - chaque prédiction renvoyée par le modèle dans `prediction_outputs`.
 
-Cela garantit une traçabilité totale entre les données sources, les entrées du modèle et la prédiction générée.
+Cela garantit une traçabilité complète entre les données sources, les entrées du modèle et la prédiction générée.
 
 ## ER Diagram
 
@@ -119,9 +119,10 @@ python scripts/load_dataset.py --csv-path /path/to/dataset.csv --truncate
 
 ## Flux de travail de traçabilité
 
-1. Une ligne de l'ensemble de données est stockée dans `employees`.
+1. Une ligne du dataset est stockée dans `employees`.
 2. Une requête de prédiction envoyée à `/predict` est stockée dans `prediction_inputs`.
-3. Si le contenu de la requête correspond à une ligne déjà présente dans `employees`, l'API relie `prediction_inputs.employee_id` à cette ligne source.
-4. La sortie du modèle est stockée dans `prediction_outputs`.
+3. Si `employee_id` est fourni dans le payload, l’API relie directement `prediction_inputs.employee_id` à l’employé correspondant.
+4. Si `employee_id` n’est pas fourni, l’API tente un matching exact entre le payload et une ligne déjà présente dans `employees`.
+5. La sortie du modèle est stockée dans `prediction_outputs`.
 
-Cela crée une piste d'audit complète du pipeline d'inférence ML.
+Cela crée une piste d’audit complète du pipeline d’inférence ML.
