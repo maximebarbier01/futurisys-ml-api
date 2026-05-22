@@ -21,6 +21,8 @@ venv/
 
 # Data / models
 data/
+!tests/data/
+!tests/data/*.json
 *.pkl
 *.joblib
 
