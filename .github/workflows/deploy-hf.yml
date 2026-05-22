@@ -2,22 +2,39 @@ name: CD - Deploy to Hugging Face Spaces
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
+
+env:
+  GITHUB_REPO_ID: "maximebarbier01/futurisys-ml-api"
+  HUGGINGFACE_REPO_ID: "mxmbrbr/futurisys-ml-api"
+  REPO_TYPE: "space"
+  SPACE_SDK: "docker"
 
 jobs:
   deploy:
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Récupération du code source
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Affichage du contexte de déploiement pour le debug
+      - name: Show deployment context
+        run: |
+          echo "Event: $GITHUB_EVENT_NAME"
+          echo "Branch/ref: $GITHUB_REF"
+          echo "Commit: $GITHUB_SHA"
+
+      # 3. Synchronisation du dépôt vers l'espace Hugging Face
       - name: Sync repository to Hugging Face Space
         uses: huggingface/hub-sync@v0.1.0
         with:
-          github_repo_id: maximebarbier01/futurisys-ml-api
-          huggingface_repo_id: mxmbrbr/futurisys-ml-api
+          github_repo_id: ${{ env.GITHUB_REPO_ID }}
+          huggingface_repo_id: ${{ env.HUGGINGFACE_REPO_ID }}
           hf_token: ${{ secrets.HF_TOKEN }}
-          repo_type: space
-          space_sdk: docker
+          repo_type: ${{ env.REPO_TYPE }}
+          space_sdk: ${{ env.SPACE_SDK }}
