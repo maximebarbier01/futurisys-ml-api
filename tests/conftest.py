@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import sys
 
@@ -10,6 +11,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+
+os.environ.setdefault("DATABASE_URL", "sqlite://")
+os.environ.setdefault("API_KEY", "test-api-key")
+os.environ.setdefault("API_KEY_HEADER_NAME", "X-API-Key")
 
 from app.db.database import get_db
 from app.db.models import Base

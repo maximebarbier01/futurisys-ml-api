@@ -178,12 +178,16 @@ Exemple de `.env.example` :
 
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/futurisys_ml_api
+API_KEY=change-me
+API_KEY_HEADER_NAME=X-API-Key
 ```
 
 Exemple de `.env` local :
 
 ```env
 DATABASE_URL=postgresql://futurisys_user:futurisys_password@localhost:5432/futurisys_ml_api
+API_KEY=change-me
+API_KEY_HEADER_NAME=X-API-Key
 ```
 
 Si ton mot de passe contient `@`, il faut l'encoder dans l'URL, par exemple
@@ -287,6 +291,10 @@ Le projet utilise PostgreSQL en local pour :
 - tracer les inputs envoyés au modèle ;
 - tracer les outputs produits par le modèle.
 
+Les identifiants de connexion ne sont pas stockés dans le code applicatif :
+ils sont lus depuis `DATABASE_URL` afin de limiter l'exposition de secrets et
+de permettre l'usage d'un utilisateur PostgreSQL dédié.
+
 ### Création de la base
 
 ```bash
@@ -330,7 +338,7 @@ python scripts/load_dataset.py --csv-path /path/to/data_eda.csv --truncate
 |---|---|---|
 | `GET` | `/` | Vérifie que l'API répond |
 | `GET` | `/health` | Vérifie l'état de santé |
-| `POST` | `/predict` | Retourne une prédiction d'attrition |
+| `POST` | `/predict` | Retourne une prédiction d'attrition, protégée par clé API |
 
 ### Documentation interactive
 
@@ -339,10 +347,26 @@ La documentation Swagger/OpenAPI est disponible ici :
 - local : `http://127.0.0.1:8000/docs`
 - déployée : [mxmbrbr-futurisys-ml-api.hf.space/docs](https://mxmbrbr-futurisys-ml-api.hf.space/docs)
 
+### Sécurité de l'API
+
+L'endpoint `/predict` est protégé par une clé API transmise dans l'en-tête
+`X-API-Key` par défaut.
+
+Variables d'environnement associées :
+
+- `API_KEY` : valeur attendue pour autoriser l'accès ;
+- `API_KEY_HEADER_NAME` : nom de l'en-tête HTTP utilisé, `X-API-Key` par défaut.
+
+Les endpoints `/` et `/health` restent publics pour permettre un usage simple
+en local et des health checks de déploiement.
+
 ### Exemple de requête
 
 ```bash
-curl -X POST "http://127.0.0.1:8000/predict"   -H "Content-Type: application/json"   -d '{
+curl -X POST "http://127.0.0.1:8000/predict" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: change-me" \
+  -d '{
     "age": 38,
     "revenu_mensuel": 5400,
     "nombre_experiences_precedentes": 3,
@@ -572,7 +596,8 @@ Sinon :
 
 - PostgreSQL est prévu principalement pour un usage local dans ce POC.
 - Hugging Face Spaces ne garantit pas une traçabilité PostgreSQL complète sans base externe.
-- L'API ne gère pas encore d'authentification dédiée.
+- La sécurité repose sur une clé API simple, adaptée à un POC mais pas à une
+  authentification complète de niveau production.
 - Un endpoint `/predict/by-employee/{employee_id}` pourrait être ajouté plus tard.
 - Le protocole de réentraînement du modèle peut encore être davantage automatisé.
 
