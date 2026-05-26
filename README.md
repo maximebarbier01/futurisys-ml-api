@@ -404,6 +404,21 @@ Rapports générés :
 - `htmlcov/`
 - `coverage.xml`
 
+### Exploiter le rapport de couverture
+
+- `htmlcov/` contient une version navigable du rapport, pensée pour une lecture
+  humaine fichier par fichier ;
+- `htmlcov/index.html` peut être ouvert localement dans un navigateur pour
+  visualiser les lignes couvertes et non couvertes ;
+- `coverage.xml` est un format structuré, utile pour la CI, les outils
+  d'analyse et le suivi automatisé de la qualité.
+
+Exemple pour ouvrir le rapport HTML sous Linux :
+
+```bash
+xdg-open htmlcov/index.html
+```
+
 État actuel :
 
 - 29 tests
@@ -423,7 +438,9 @@ Fonctionnement :
 - déclenché sur `pull_request` vers `main` et `develop` ;
 - installe Python 3.11 ;
 - installe les dépendances ;
-- lance Pytest avec couverture minimale.
+- lance Pytest avec couverture minimale ;
+- génère `coverage.xml` et `htmlcov/` ;
+- publie les rapports de couverture comme artefacts GitHub Actions.
 
 ### Déploiement continu
 
