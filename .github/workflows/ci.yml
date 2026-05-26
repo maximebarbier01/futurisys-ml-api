@@ -15,6 +15,8 @@ env:
   APP_PACKAGE: "app"
   TESTS_DIR: "tests"
   COVERAGE_MIN: "70"
+  COVERAGE_XML_FILE: "coverage.xml"
+  COVERAGE_HTML_DIR: "htmlcov"
 
 jobs:
   test:
@@ -47,3 +49,12 @@ jobs:
             --cov-report=html \
             --cov-fail-under=${{ env.COVERAGE_MIN }} \
             ${{ env.TESTS_DIR }}
+
+      # 5. Publication des rapports de couverture comme artefacts GitHub Actions
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            ${{ env.COVERAGE_XML_FILE }}
+            ${{ env.COVERAGE_HTML_DIR }}
