@@ -22,6 +22,7 @@ traçabilité locale en base et déploiement automatisé.
 - [Architecture](#architecture)
 - [Stack technique](#stack-technique)
 - [Démarrage rapide](#démarrage-rapide)
+- [Utilisation avec Docker en local](#utilisation-avec-docker-en-local)
 - [Base de données PostgreSQL](#base-de-données-postgresql)
 - [Utilisation de l'API](#utilisation-de-lapi)
 - [Documentation du modèle](#documentation-du-modèle)
@@ -200,6 +201,81 @@ Accès local :
 - `http://127.0.0.1:8000/docs`
 - `http://127.0.0.1:8000/openapi.json`
 - `http://127.0.0.1:8000/health`
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Utilisation avec Docker en local
+
+### Construire l'image
+
+```bash
+docker build -t futurisys-ml-api .
+```
+
+### Lancer le conteneur
+
+```bash
+docker run --rm -p 8000:7860 futurisys-ml-api
+```
+
+### URLs d'accès
+
+- `http://127.0.0.1:8000`
+- `http://127.0.0.1:8000/docs`
+- `http://127.0.0.1:8000/openapi.json`
+- `http://127.0.0.1:8000/health`
+
+### Comportement actuel sans PostgreSQL
+
+Par défaut, le conteneur tente d'utiliser la variable `DATABASE_URL` définie
+dans le projet. Si cette URL pointe vers `localhost`, le conteneur ne peut pas
+atteindre la base PostgreSQL de la machine hôte.
+
+Dans ce cas :
+
+- l'API démarre correctement ;
+- `/predict` continue de retourner une prédiction ;
+- la persistance dans `prediction_inputs` et `prediction_outputs` est ignorée ;
+- un warning de connexion PostgreSQL apparaît dans les logs du conteneur.
+
+Ce comportement est volontaire : l'API conserve un mode dégradé sans bloquer la
+prédiction.
+
+### Option : connecter Docker à PostgreSQL local
+
+Pour permettre au conteneur d'accéder à PostgreSQL lancé sur la machine hôte,
+plusieurs stratégies sont possibles selon l'environnement local.
+
+#### Docker Desktop (Windows / macOS)
+
+Exemple avec `host.docker.internal` :
+
+```bash
+docker run --rm -p 8000:7860 \
+  --add-host=host.docker.internal:host-gateway \
+  -e DATABASE_URL="postgresql://user:password@host.docker.internal:5432/futurisys_ml_api" \
+  futurisys-ml-api
+```
+
+#### Linux / WSL
+
+Quand PostgreSQL écoute uniquement sur l'interface locale, le plus simple est
+d'utiliser le réseau hôte :
+
+```bash
+docker run --rm --network host \
+  -e DATABASE_URL="postgresql://user:password@localhost:5432/futurisys_ml_api" \
+  futurisys-ml-api
+```
+
+Dans ce cas, l'API est accessible sur :
+
+- `http://127.0.0.1:7860`
+- `http://127.0.0.1:7860/docs`
+- `http://127.0.0.1:7860/health`
+
+Si le mot de passe contient `@`, il faut l'encoder dans l'URL, par exemple
+`%40`.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
