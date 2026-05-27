@@ -24,6 +24,7 @@ traçabilité locale en base et déploiement automatisé.
 - [Démarrage rapide](#démarrage-rapide)
 - [Utilisation avec Docker en local](#utilisation-avec-docker-en-local)
 - [Base de données PostgreSQL](#base-de-données-postgresql)
+- [PostgreSQL distant validé](#postgresql-distant-validé)
 - [Utilisation de l'API](#utilisation-de-lapi)
 - [Documentation du modèle](#documentation-du-modèle)
 - [Tests](#tests)
@@ -281,6 +282,29 @@ Dans ce cas, l'API est accessible sur :
 Si le mot de passe contient `@`, il faut l'encoder dans l'URL, par exemple
 `%40`.
 
+Le projet peut également être branché à une base PostgreSQL distante, par
+exemple une instance Supabase, via la même variable `DATABASE_URL`.
+
+### Validation avec PostgreSQL distant
+
+Le projet a aussi été validé avec une base PostgreSQL distante Supabase.
+
+Exemple de lancement Docker avec une base distante :
+
+```bash
+docker run --rm -p 8000:7860 \
+  -e DATABASE_URL="postgresql://user:password@host:port/postgres" \
+  -e API_KEY="change-me" \
+  -e API_KEY_HEADER_NAME="X-API-Key" \
+  futurisys-ml-api
+```
+
+Dans cette configuration :
+
+- le conteneur démarre correctement ;
+- l'API répond sur `/`, `/health`, `/docs` et `/predict` ;
+- les écritures dans `prediction_inputs` et `prediction_outputs` sont bien persistées dans la base distante.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Base de données PostgreSQL
@@ -327,6 +351,40 @@ python scripts/load_dataset.py --csv-path /path/to/data_eda.csv --truncate
 
 - documentation : `docs/database_schema.md`
 - version SQL : `sql/schema.sql`
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## PostgreSQL distant validé
+
+Une instance PostgreSQL distante a été validée avec Supabase afin de confirmer
+que la traçabilité ne dépend pas uniquement d'une base locale.
+
+Ce scénario a permis de vérifier que :
+
+- `python scripts/create_db.py` crée correctement les tables à distance ;
+- `python scripts/load_dataset.py --csv-path ... --truncate` charge le dataset
+  complet dans `employees` ;
+- l'API locale branchée sur cette `DATABASE_URL` distante enregistre bien les
+  prédictions dans `prediction_inputs` et `prediction_outputs` ;
+- le conteneur Docker branché sur la même `DATABASE_URL` distante persiste
+  également les écritures.
+
+Vérification SQL réalisée après import :
+
+```sql
+SELECT COUNT(*) FROM employees;
+SELECT COUNT(*) FROM prediction_inputs;
+SELECT COUNT(*) FROM prediction_outputs;
+```
+
+Résultat observé après chargement initial du dataset :
+
+- `employees = 1470`
+- `prediction_inputs = 0`
+- `prediction_outputs = 0`
+
+Puis les compteurs des tables de logs augmentent après chaque appel valide à
+`/predict`.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -572,6 +630,28 @@ Le Space peut fonctionner sans PostgreSQL disponible. Dans ce cas :
 - la persistance dans `prediction_inputs` et `prediction_outputs` est ignorée ;
 - la traçabilité complète reste réservée à l'exécution locale ou à un déploiement avec une base PostgreSQL accessible.
 
+### Limite actuelle avec PostgreSQL distant
+
+Même avec une base distante fonctionnelle, la liaison entre le Space Hugging
+Face et PostgreSQL n'est pas garantie.
+
+Dans le cadre de ce projet, PostgreSQL distant a été validé pour :
+
+- l'API locale ;
+- Docker en local.
+
+En revanche, Hugging Face Spaces limite les sorties réseau aux ports `80`,
+`443` et `8080`, tandis que les connexions PostgreSQL managées passent
+généralement par `5432` ou `6543`. Cette contrainte peut empêcher la
+persistance distante depuis le Space, même si la même `DATABASE_URL` fonctionne
+parfaitement en local.
+
+Dans ce cas, il est préférable de :
+
+- conserver PostgreSQL pour les environnements local et Docker ;
+- documenter clairement la limite de plateforme ;
+- éviter de forcer un contournement complexe qui sortirait du périmètre du POC.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Traçabilité des prédictions
@@ -594,8 +674,8 @@ Sinon :
 
 ## Limites et améliorations
 
-- PostgreSQL est prévu principalement pour un usage local dans ce POC.
-- Hugging Face Spaces ne garantit pas une traçabilité PostgreSQL complète sans base externe.
+- PostgreSQL distant est validé pour l'API locale et Docker, mais pas garanti
+  pour Hugging Face Spaces en raison des contraintes réseau de la plateforme.
 - La sécurité repose sur une clé API simple, adaptée à un POC mais pas à une
   authentification complète de niveau production.
 - Un endpoint `/predict/by-employee/{employee_id}` pourrait être ajouté plus tard.
