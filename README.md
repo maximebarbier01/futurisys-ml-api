@@ -192,7 +192,7 @@ API_KEY_HEADER_NAME=X-API-Key
 Exemple de `.env` local :
 
 ```env
-DATABASE_URL=postgresql://futurisys_user:<your-local-password>@localhost:5432/futurisys_ml_api
+DATABASE_URL=postgresql://futurisys_user:<local-password>@localhost:5432/futurisys_ml_api
 API_KEY=<local-api-key>
 API_KEY_HEADER_NAME=X-API-Key
 ```
@@ -227,9 +227,6 @@ ou :
 ```bash
 cp .env.remote .env
 ```
-
-Les vrais secrets ne doivent jamais être ajoutés au `README.md` ni à
-`.env.example`.
 
 ### Lancer l'API
 
@@ -315,9 +312,6 @@ Dans ce cas, l'API est accessible sur :
 - `http://127.0.0.1:7860`
 - `http://127.0.0.1:7860/docs`
 - `http://127.0.0.1:7860/health`
-
-Si le mot de passe contient `@`, il faut l'encoder dans l'URL, par exemple
-`%40`.
 
 Le projet peut également être branché à une base PostgreSQL distante, par
 exemple une instance Supabase, via la même variable `DATABASE_URL`.
