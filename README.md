@@ -173,12 +173,18 @@ poetry export --with dev -f requirements.txt --output requirements-dev.txt --wit
 
 ### Configuration
 
-Le projet lit la variable `DATABASE_URL` depuis un fichier `.env`.
+Le projet lit sa configuration depuis un fichier `.env`.
+
+Variables attendues :
+
+- `DATABASE_URL`
+- `API_KEY`
+- `API_KEY_HEADER_NAME`
 
 Exemple de `.env.example` :
 
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/futurisys_ml_api
+DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<database>
 API_KEY=change-me
 API_KEY_HEADER_NAME=X-API-Key
 ```
@@ -186,13 +192,44 @@ API_KEY_HEADER_NAME=X-API-Key
 Exemple de `.env` local :
 
 ```env
-DATABASE_URL=postgresql://futurisys_user:futurisys_password@localhost:5432/futurisys_ml_api
-API_KEY=change-me
+DATABASE_URL=postgresql://futurisys_user:<your-local-password>@localhost:5432/futurisys_ml_api
+API_KEY=<local-api-key>
 API_KEY_HEADER_NAME=X-API-Key
 ```
 
-Si ton mot de passe contient `@`, il faut l'encoder dans l'URL, par exemple
-`%40`.
+Exemple de `.env` avec une base distante :
+
+```env
+DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<database>
+API_KEY=<remote-api-key>
+API_KEY_HEADER_NAME=X-API-Key
+```
+
+### Gestion recommandée des environnements
+
+Le projet charge uniquement le fichier `.env` au démarrage.
+
+Stratégie recommandée :
+
+- conserver `.env.example` dans le dépôt, avec des placeholders uniquement ;
+- conserver un seul `.env` actif à la fois sur la machine locale ;
+- si besoin, garder en local des variantes non versionnées comme `.env.local`
+  et `.env.remote`, puis copier celle voulue vers `.env`.
+
+Exemple :
+
+```bash
+cp .env.local .env
+```
+
+ou :
+
+```bash
+cp .env.remote .env
+```
+
+Les vrais secrets ne doivent jamais être ajoutés au `README.md` ni à
+`.env.example`.
 
 ### Lancer l'API
 
@@ -294,7 +331,7 @@ Exemple de lancement Docker avec une base distante :
 ```bash
 docker run --rm -p 8000:7860 \
   -e DATABASE_URL="postgresql://user:password@host:port/postgres" \
-  -e API_KEY="change-me" \
+  -e API_KEY="<api-key>" \
   -e API_KEY_HEADER_NAME="X-API-Key" \
   futurisys-ml-api
 ```
@@ -423,7 +460,7 @@ en local et des health checks de déploiement.
 ```bash
 curl -X POST "http://127.0.0.1:8000/predict" \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: change-me" \
+  -H "X-API-Key: <api-key>" \
   -d '{
     "age": 38,
     "revenu_mensuel": 5400,
