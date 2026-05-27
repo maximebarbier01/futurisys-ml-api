@@ -184,42 +184,25 @@ Variables attendues :
 Exemple de `.env.example` :
 
 ```env
-DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<database>
+DATABASE_URL=postgresql://user:password@localhost:5432/futurisys_ml_api
 API_KEY=change-me
 API_KEY_HEADER_NAME=X-API-Key
 ```
 
-Exemple de `.env` local :
+Exemple de `.env.local` :
 
 ```env
-DATABASE_URL=postgresql://futurisys_user:<local-password>@localhost:5432/futurisys_ml_api
+DATABASE_URL=postgresql://futurisys_user:<your-local-password>@localhost:5432/futurisys_ml_api
 API_KEY=<local-api-key>
 API_KEY_HEADER_NAME=X-API-Key
 ```
 
-Exemple de `.env` avec une base distante :
+Exemple de `.env.remote` :
 
 ```env
-DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<database>
+DATABASE_URL=postgresql://<remote-user>:<remote-password>@<remote-host>:<remote-port>/<remote-database>
 API_KEY=<remote-api-key>
 API_KEY_HEADER_NAME=X-API-Key
-```
-
-### Gestion recommandée des environnements
-
-Le projet charge uniquement le fichier `.env` au démarrage.
-
-Stratégie recommandée :
-
-- conserver `.env.example` dans le dépôt, avec des placeholders uniquement ;
-- conserver un seul `.env` actif à la fois sur la machine locale ;
-- si besoin, garder en local des variantes non versionnées comme `.env.local`
-  et `.env.remote`, puis copier celle voulue vers `.env`.
-
-Exemple :
-
-```bash
-cp .env.local .env
 ```
 
 ou :
@@ -227,6 +210,28 @@ ou :
 ```bash
 cp .env.remote .env
 ```
+
+### Gestion recommandée des environnements
+
+L'application charge uniquement le fichier `.env` au démarrage.
+
+Pour lancer `uvicorn` avec la configuration locale :
+
+```bash
+cp .env.local .env
+uvicorn app.main:app --reload
+```
+
+Pour lancer `uvicorn` avec la configuration distante :
+
+```bash
+cp .env.remote .env
+uvicorn app.main:app --reload
+```
+
+Cette approche permet de garder plusieurs presets non versionnés et d'activer
+simplement celui voulu. Les vrais secrets ne doivent jamais être ajoutés au
+`README.md` ni à `.env.example`.
 
 ### Lancer l'API
 
@@ -251,11 +256,37 @@ Accès local :
 docker build -t futurisys-ml-api .
 ```
 
-### Lancer le conteneur
+### Lancer le conteneur avec l'environnement local
 
 ```bash
-docker run --rm -p 8000:7860 futurisys-ml-api
+docker run --rm -p 8000:7860 --env-file .env.local futurisys-ml-api
 ```
+
+### Lancer le conteneur avec l'environnement distant
+
+```bash
+docker run --rm -p 8000:7860 --env-file .env.remote futurisys-ml-api
+```
+
+### Pourquoi `cp .env.remote .env` ne suffit pas pour Docker
+
+Contrairement à `uvicorn` lancé directement sur la machine locale, Docker ne lit
+pas automatiquement le fichier `.env` du projet dans ce dépôt.
+
+Dans cette configuration :
+
+- `.dockerignore` exclut `.env` et `.env.*` du contexte de build ;
+- l'image construite n'embarque donc pas ces fichiers ;
+- il faut passer explicitement les variables au runtime avec `--env-file` ou
+  `-e`.
+
+Autrement dit :
+
+- `cp .env.local .env` ou `cp .env.remote .env` sert à choisir la configuration
+  active pour `uvicorn` ;
+- `docker run --env-file .env.local ...` ou
+  `docker run --env-file .env.remote ...` sert à choisir la configuration
+  active pour le conteneur.
 
 ### URLs d'accès
 
@@ -264,77 +295,18 @@ docker run --rm -p 8000:7860 futurisys-ml-api
 - `http://127.0.0.1:8000/openapi.json`
 - `http://127.0.0.1:8000/health`
 
-### Comportement actuel sans PostgreSQL
+### Comportement sans variables passées au conteneur
 
-Par défaut, le conteneur tente d'utiliser la variable `DATABASE_URL` définie
-dans le projet. Si cette URL pointe vers `localhost`, le conteneur ne peut pas
-atteindre la base PostgreSQL de la machine hôte.
+Si le conteneur est lancé sans `--env-file` ni variables `-e`, il peut ne pas
+recevoir la bonne `DATABASE_URL`.
 
 Dans ce cas :
 
-- l'API démarre correctement ;
-- `/predict` continue de retourner une prédiction ;
-- la persistance dans `prediction_inputs` et `prediction_outputs` est ignorée ;
-- un warning de connexion PostgreSQL apparaît dans les logs du conteneur.
-
-Ce comportement est volontaire : l'API conserve un mode dégradé sans bloquer la
-prédiction.
-
-### Option : connecter Docker à PostgreSQL local
-
-Pour permettre au conteneur d'accéder à PostgreSQL lancé sur la machine hôte,
-plusieurs stratégies sont possibles selon l'environnement local.
-
-#### Docker Desktop (Windows / macOS)
-
-Exemple avec `host.docker.internal` :
-
-```bash
-docker run --rm -p 8000:7860 \
-  --add-host=host.docker.internal:host-gateway \
-  -e DATABASE_URL="postgresql://user:password@host.docker.internal:5432/futurisys_ml_api" \
-  futurisys-ml-api
-```
-
-#### Linux / WSL
-
-Quand PostgreSQL écoute uniquement sur l'interface locale, le plus simple est
-d'utiliser le réseau hôte :
-
-```bash
-docker run --rm --network host \
-  -e DATABASE_URL="postgresql://user:password@localhost:5432/futurisys_ml_api" \
-  futurisys-ml-api
-```
-
-Dans ce cas, l'API est accessible sur :
-
-- `http://127.0.0.1:7860`
-- `http://127.0.0.1:7860/docs`
-- `http://127.0.0.1:7860/health`
-
-Le projet peut également être branché à une base PostgreSQL distante, par
-exemple une instance Supabase, via la même variable `DATABASE_URL`.
-
-### Validation avec PostgreSQL distant
-
-Le projet a aussi été validé avec une base PostgreSQL distante Supabase.
-
-Exemple de lancement Docker avec une base distante :
-
-```bash
-docker run --rm -p 8000:7860 \
-  -e DATABASE_URL="postgresql://user:password@host:port/postgres" \
-  -e API_KEY="<api-key>" \
-  -e API_KEY_HEADER_NAME="X-API-Key" \
-  futurisys-ml-api
-```
-
-Dans cette configuration :
-
-- le conteneur démarre correctement ;
-- l'API répond sur `/`, `/health`, `/docs` et `/predict` ;
-- les écritures dans `prediction_inputs` et `prediction_outputs` sont bien persistées dans la base distante.
+- l'API peut quand même démarrer ;
+- `/predict` peut continuer de répondre ;
+- la persistance dans `prediction_inputs` et `prediction_outputs` peut être
+  ignorée si la base configurée n'est pas joignable ;
+- un warning de connexion PostgreSQL peut apparaître dans les logs du conteneur.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -395,10 +367,10 @@ Ce scénario a permis de vérifier que :
 - `python scripts/create_db.py` crée correctement les tables à distance ;
 - `python scripts/load_dataset.py --csv-path ... --truncate` charge le dataset
   complet dans `employees` ;
-- l'API locale branchée sur cette `DATABASE_URL` distante enregistre bien les
-  prédictions dans `prediction_inputs` et `prediction_outputs` ;
-- le conteneur Docker branché sur la même `DATABASE_URL` distante persiste
-  également les écritures.
+- l'API locale branchée sur `.env.remote` enregistre bien les prédictions dans
+  `prediction_inputs` et `prediction_outputs` ;
+- le conteneur Docker branché sur `--env-file .env.remote` persiste également
+  les écritures.
 
 Vérification SQL réalisée après import :
 
@@ -438,16 +410,14 @@ La documentation Swagger/OpenAPI est disponible ici :
 
 ### Sécurité de l'API
 
-L'endpoint `/predict` est protégé par une clé API transmise dans l'en-tête
-`X-API-Key` par défaut.
+L'endpoint `/predict` peut être protégé par une clé API transmise dans l'en-tête
+`X-API-Key`.
 
 Variables d'environnement associées :
 
 - `API_KEY` : valeur attendue pour autoriser l'accès ;
-- `API_KEY_HEADER_NAME` : nom de l'en-tête HTTP utilisé, `X-API-Key` par défaut.
-
-Les endpoints `/` et `/health` restent publics pour permettre un usage simple
-en local et des health checks de déploiement.
+- `API_KEY_HEADER_NAME` : nom de l'en-tête HTTP utilisé, `X-API-Key` par
+  défaut.
 
 ### Exemple de requête
 
@@ -628,8 +598,7 @@ Fonctionnement :
 - installe Python 3.11 ;
 - installe les dépendances ;
 - lance Pytest avec couverture minimale ;
-- génère `coverage.xml` et `htmlcov/` ;
-- publie les rapports de couverture comme artefacts GitHub Actions.
+- génère `coverage.xml` et `htmlcov/`.
 
 ### Déploiement continu
 
