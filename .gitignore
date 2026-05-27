@@ -18,6 +18,8 @@ venv/
 
 # Environment variables
 .env
+.env.*
+!.env.example
 
 # Data / models
 data/

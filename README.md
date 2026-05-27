@@ -22,7 +22,9 @@ traçabilité locale en base et déploiement automatisé.
 - [Architecture](#architecture)
 - [Stack technique](#stack-technique)
 - [Démarrage rapide](#démarrage-rapide)
+- [Utilisation avec Docker en local](#utilisation-avec-docker-en-local)
 - [Base de données PostgreSQL](#base-de-données-postgresql)
+- [PostgreSQL distant validé](#postgresql-distant-validé)
 - [Utilisation de l'API](#utilisation-de-lapi)
 - [Documentation du modèle](#documentation-du-modèle)
 - [Tests](#tests)
@@ -171,22 +173,62 @@ poetry export --with dev -f requirements.txt --output requirements-dev.txt --wit
 
 ### Configuration
 
-Le projet lit la variable `DATABASE_URL` depuis un fichier `.env`.
+Le projet lit sa configuration depuis un fichier `.env`.
+
+Variables attendues :
+
+- `DATABASE_URL`
+- `API_KEY`
+- `API_KEY_HEADER_NAME`
 
 Exemple de `.env.example` :
 
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/futurisys_ml_api
+API_KEY=change-me
+API_KEY_HEADER_NAME=X-API-Key
 ```
 
-Exemple de `.env` local :
+Exemple de `.env.local` :
 
 ```env
-DATABASE_URL=postgresql://futurisys_user:futurisys_password@localhost:5432/futurisys_ml_api
+DATABASE_URL=postgresql://futurisys_user:<your-local-password>@localhost:5432/futurisys_ml_api
+API_KEY=<local-api-key>
+API_KEY_HEADER_NAME=X-API-Key
+```
+
+Exemple de `.env.remote` :
+
+```env
+DATABASE_URL=postgresql://<remote-user>:<remote-password>@<remote-host>:<remote-port>/<remote-database>
+API_KEY=<remote-api-key>
+API_KEY_HEADER_NAME=X-API-Key
 ```
 
 Si ton mot de passe contient `@`, il faut l'encoder dans l'URL, par exemple
 `%40`.
+
+### Gestion recommandée des environnements
+
+L'application charge uniquement le fichier `.env` au démarrage.
+
+Pour lancer `uvicorn` avec la configuration locale :
+
+```bash
+cp .env.local .env
+uvicorn app.main:app --reload
+```
+
+Pour lancer `uvicorn` avec la configuration distante :
+
+```bash
+cp .env.remote .env
+uvicorn app.main:app --reload
+```
+
+Cette approche permet de garder plusieurs presets non versionnés et d'activer
+simplement celui voulu. Les vrais secrets ne doivent jamais être ajoutés au
+`README.md` ni à `.env.example`.
 
 ### Lancer l'API
 
@@ -200,6 +242,68 @@ Accès local :
 - `http://127.0.0.1:8000/docs`
 - `http://127.0.0.1:8000/openapi.json`
 - `http://127.0.0.1:8000/health`
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Utilisation avec Docker en local
+
+### Construire l'image
+
+```bash
+docker build -t futurisys-ml-api .
+```
+
+### Lancer le conteneur avec l'environnement local
+
+```bash
+docker run --rm -p 8000:7860 --env-file .env.local futurisys-ml-api
+```
+
+### Lancer le conteneur avec l'environnement distant
+
+```bash
+docker run --rm -p 8000:7860 --env-file .env.remote futurisys-ml-api
+```
+
+### Pourquoi `cp .env.remote .env` ne suffit pas pour Docker
+
+Contrairement à `uvicorn` lancé directement sur la machine locale, Docker ne lit
+pas automatiquement le fichier `.env` du projet dans ce dépôt.
+
+Dans cette configuration :
+
+- `.dockerignore` exclut `.env` et `.env.*` du contexte de build ;
+- l'image construite n'embarque donc pas ces fichiers ;
+- il faut passer explicitement les variables au runtime avec `--env-file` ou
+  `-e`.
+
+Autrement dit :
+
+- `cp .env.local .env` ou `cp .env.remote .env` sert à choisir la configuration
+  active pour `uvicorn` ;
+- `docker run --env-file .env.local ...` ou
+  `docker run --env-file .env.remote ...` sert à choisir la configuration
+  active pour le conteneur.
+
+### URLs d'accès
+
+- `http://127.0.0.1:8000`
+- `http://127.0.0.1:8000/docs`
+- `http://127.0.0.1:8000/openapi.json`
+- `http://127.0.0.1:8000/health`
+
+### Comportement sans variables passées au conteneur
+
+Si le conteneur est lancé sans `--env-file` ni variables `-e`, il peut ne pas
+recevoir la bonne `DATABASE_URL`.
+
+Dans ce cas :
+
+- l'API peut quand même démarrer ;
+- `/predict` peut continuer de répondre ;
+- la persistance dans `prediction_inputs` et `prediction_outputs` peut être
+  ignorée si la base configurée n'est pas joignable ;
+- un warning de connexion PostgreSQL peut apparaître dans les logs du conteneur.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -246,6 +350,40 @@ python scripts/load_dataset.py --csv-path /path/to/data_eda.csv --truncate
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## PostgreSQL distant validé
+
+Une instance PostgreSQL distante a été validée avec Supabase afin de confirmer
+que la traçabilité ne dépend pas uniquement d'une base locale.
+
+Ce scénario a permis de vérifier que :
+
+- `python scripts/create_db.py` crée correctement les tables à distance ;
+- `python scripts/load_dataset.py --csv-path ... --truncate` charge le dataset
+  complet dans `employees` ;
+- l'API locale branchée sur `.env.remote` enregistre bien les prédictions dans
+  `prediction_inputs` et `prediction_outputs` ;
+- le conteneur Docker branché sur `--env-file .env.remote` persiste également
+  les écritures.
+
+Vérification SQL réalisée après import :
+
+```sql
+SELECT COUNT(*) FROM employees;
+SELECT COUNT(*) FROM prediction_inputs;
+SELECT COUNT(*) FROM prediction_outputs;
+```
+
+Résultat observé après chargement initial du dataset :
+
+- `employees = 1470`
+- `prediction_inputs = 0`
+- `prediction_outputs = 0`
+
+Puis les compteurs des tables de logs augmentent après chaque appel valide à
+`/predict`.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Utilisation de l'API
 
 ### Endpoints disponibles
@@ -263,10 +401,24 @@ La documentation Swagger/OpenAPI est disponible ici :
 - local : `http://127.0.0.1:8000/docs`
 - déployée : [mxmbrbr-futurisys-ml-api.hf.space/docs](https://mxmbrbr-futurisys-ml-api.hf.space/docs)
 
+### Sécurité de l'API
+
+L'endpoint `/predict` peut être protégé par une clé API transmise dans l'en-tête
+`X-API-Key`.
+
+Variables d'environnement associées :
+
+- `API_KEY` : valeur attendue pour autoriser l'accès ;
+- `API_KEY_HEADER_NAME` : nom de l'en-tête HTTP utilisé, `X-API-Key` par
+  défaut.
+
 ### Exemple de requête
 
 ```bash
-curl -X POST "http://127.0.0.1:8000/predict"   -H "Content-Type: application/json"   -d '{
+curl -X POST "http://127.0.0.1:8000/predict" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: <api-key>" \
+  -d '{
     "age": 38,
     "revenu_mensuel": 5400,
     "nombre_experiences_precedentes": 3,
@@ -423,7 +575,8 @@ Fonctionnement :
 - déclenché sur `pull_request` vers `main` et `develop` ;
 - installe Python 3.11 ;
 - installe les dépendances ;
-- lance Pytest avec couverture minimale.
+- lance Pytest avec couverture minimale ;
+- génère `coverage.xml` et `htmlcov/`.
 
 ### Déploiement continu
 
@@ -455,6 +608,28 @@ Le Space peut fonctionner sans PostgreSQL disponible. Dans ce cas :
 - la persistance dans `prediction_inputs` et `prediction_outputs` est ignorée ;
 - la traçabilité complète reste réservée à l'exécution locale ou à un déploiement avec une base PostgreSQL accessible.
 
+### Limite actuelle avec PostgreSQL distant
+
+Même avec une base distante fonctionnelle, la liaison entre le Space Hugging
+Face et PostgreSQL n'est pas garantie.
+
+Dans le cadre de ce projet, PostgreSQL distant a été validé pour :
+
+- l'API locale ;
+- Docker en local.
+
+En revanche, Hugging Face Spaces limite les sorties réseau aux ports `80`,
+`443` et `8080`, tandis que les connexions PostgreSQL managées passent
+généralement par `5432` ou `6543`. Cette contrainte peut empêcher la
+persistance distante depuis le Space, même si la même `DATABASE_URL` fonctionne
+parfaitement en local.
+
+Dans ce cas, il est préférable de :
+
+- conserver PostgreSQL pour les environnements local et Docker ;
+- documenter clairement la limite de plateforme ;
+- éviter de forcer un contournement complexe qui sortirait du périmètre du POC.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Traçabilité des prédictions
@@ -477,9 +652,10 @@ Sinon :
 
 ## Limites et améliorations
 
-- PostgreSQL est prévu principalement pour un usage local dans ce POC.
-- Hugging Face Spaces ne garantit pas une traçabilité PostgreSQL complète sans base externe.
-- L'API ne gère pas encore d'authentification dédiée.
+- PostgreSQL distant est validé pour l'API locale et Docker, mais pas garanti
+  pour Hugging Face Spaces en raison des contraintes réseau de la plateforme.
+- La sécurité repose sur une clé API simple, adaptée à un POC mais pas à une
+  authentification complète de niveau production.
 - Un endpoint `/predict/by-employee/{employee_id}` pourrait être ajouté plus tard.
 - Le protocole de réentraînement du modèle peut encore être davantage automatisé.
 
