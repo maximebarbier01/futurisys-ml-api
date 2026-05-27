@@ -11,17 +11,25 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 load_dotenv()
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://futurisys_user:futurisys_password@localhost:5432/futurisys_ml_api",
-)
+
+#************************
+#* Lecture configuration *
+#************************
+
+def get_database_url() -> str:
+    database_url = os.getenv("DATABASE_URL")
+
+    if not database_url:
+        raise RuntimeError("DATABASE_URL environment variable is required.")
+
+    return database_url
 
 
 #************************
 #* Objets SQLAlchemy    *
 #************************
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(get_database_url())
 
 SessionLocal = sessionmaker(
     autocommit=False,

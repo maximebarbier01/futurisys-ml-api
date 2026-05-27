@@ -1,5 +1,6 @@
 from copy import deepcopy
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -16,6 +17,7 @@ from app.main import app
 #********************************
 
 client = TestClient(app)
+client.headers.update({os.environ["API_KEY_HEADER_NAME"]: os.environ["API_KEY"]})
 DATA_DIR = Path(__file__).parent / "data"
 
 
@@ -76,6 +78,30 @@ def test_openapi_schema():
     assert "/" in data["paths"]
     assert "/health" in data["paths"]
     assert "/predict" in data["paths"]
+
+
+#********************************
+#* Tests securite API          *
+#********************************
+
+def test_predict_requires_api_key():
+    unauthenticated_client = TestClient(app)
+
+    response = unauthenticated_client.post("/predict", json=get_valid_payload())
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid or missing API key"}
+
+
+def test_predict_rejects_invalid_api_key():
+    response = client.post(
+        "/predict",
+        json=get_valid_payload(),
+        headers={os.environ["API_KEY_HEADER_NAME"]: "invalid-api-key"},
+    )
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid or missing API key"}
 
 
 #********************************

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app.core.security import require_api_key
 from app.db.database import get_db
 from app.db.repository import (
     create_prediction_input,
@@ -19,7 +20,7 @@ from app.services.model_service import model_service
 #* Router et logs       *
 #************************
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_api_key)])
 logger = logging.getLogger(__name__)
 
 

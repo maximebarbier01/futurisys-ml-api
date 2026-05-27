@@ -205,8 +205,11 @@ API_KEY=<remote-api-key>
 API_KEY_HEADER_NAME=X-API-Key
 ```
 
-Si ton mot de passe contient `@`, il faut l'encoder dans l'URL, par exemple
-`%40`.
+ou :
+
+```bash
+cp .env.remote .env
+```
 
 ### Gestion recommandée des environnements
 
@@ -315,6 +318,10 @@ Le projet utilise PostgreSQL en local pour :
 - tracer les inputs envoyés au modèle ;
 - tracer les outputs produits par le modèle.
 
+Les identifiants de connexion ne sont pas stockés dans le code applicatif :
+ils sont lus depuis `DATABASE_URL` afin de limiter l'exposition de secrets et
+de permettre l'usage d'un utilisateur PostgreSQL dédié.
+
 ### Création de la base
 
 ```bash
@@ -392,7 +399,7 @@ Puis les compteurs des tables de logs augmentent après chaque appel valide à
 |---|---|---|
 | `GET` | `/` | Vérifie que l'API répond |
 | `GET` | `/health` | Vérifie l'état de santé |
-| `POST` | `/predict` | Retourne une prédiction d'attrition |
+| `POST` | `/predict` | Retourne une prédiction d'attrition, protégée par clé API |
 
 ### Documentation interactive
 
@@ -555,6 +562,21 @@ Rapports générés :
 
 - `htmlcov/`
 - `coverage.xml`
+
+### Exploiter le rapport de couverture
+
+- `htmlcov/` contient une version navigable du rapport, pensée pour une lecture
+  humaine fichier par fichier ;
+- `htmlcov/index.html` peut être ouvert localement dans un navigateur pour
+  visualiser les lignes couvertes et non couvertes ;
+- `coverage.xml` est un format structuré, utile pour la CI, les outils
+  d'analyse et le suivi automatisé de la qualité.
+
+Exemple pour ouvrir le rapport HTML sous Linux :
+
+```bash
+xdg-open htmlcov/index.html
+```
 
 État actuel :
 
