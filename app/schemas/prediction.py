@@ -37,6 +37,13 @@ PREDICTION_INPUT_EXAMPLE = {
     "frequence_deplacement": "Occasionnel",
 }
 
+PREDICTION_OUTPUT_EXAMPLE = {
+    "prediction": 1,
+    "probability": 0.9757943470153518,
+    "threshold": 0.211717,
+    "label": "attrition",
+}
+
 
 #************************
 #* Schema input         *
@@ -122,6 +129,8 @@ class PredictionInput(BaseModel):
 #************************
 
 class PredictionOutput(BaseModel):
+    model_config = ConfigDict(json_schema_extra={"example": PREDICTION_OUTPUT_EXAMPLE})
+
     prediction: Literal[0, 1]
     probability: float = Field(..., ge=0.0, le=1.0)
     threshold: float = Field(..., ge=0.0, le=1.0)
