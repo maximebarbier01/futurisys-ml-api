@@ -12,7 +12,11 @@ from app.db.repository import (
     find_matching_employee,
     get_employee_by_id,
 )
-from app.schemas.prediction import PredictionInput, PredictionOutput
+from app.schemas.prediction import (
+    PREDICTION_OUTPUT_EXAMPLE,
+    PredictionInput,
+    PredictionOutput,
+)
 from app.services.model_service import model_service
 
 
@@ -28,7 +32,19 @@ logger = logging.getLogger(__name__)
 #* Endpoint prediction  *
 #************************
 
-@router.post("/predict", response_model=PredictionOutput)
+@router.post(
+    "/predict",
+    response_model=PredictionOutput,
+    responses={
+        200: {
+            "content": {
+                "application/json": {
+                    "example": PREDICTION_OUTPUT_EXAMPLE,
+                }
+            }
+        }
+    },
+)
 def predict(input_data: PredictionInput, db: Session = Depends(get_db)):
     payload = input_data.model_dump(exclude_none=True)
     employee_id = payload.pop("employee_id", None)
