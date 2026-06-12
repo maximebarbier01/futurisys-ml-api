@@ -487,7 +487,7 @@ Le schéma Pydantic :
 - contrôle les types ;
 - impose des bornes métier ;
 - restreint certaines catégories avec `Literal[...]` ;
-- accepte un `employee_id` optionnel pour lier une prédiction à un employé existant.
+- accepte un `id_employee` optionnel pour lier une prédiction à un employé existant.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -674,9 +674,10 @@ Le projet garantit une traçabilité locale des inférences :
 - chaque payload reçu par `/predict` est stocké dans `prediction_inputs` ;
 - chaque résultat retourné est stocké dans `prediction_outputs`.
 
-Si `employee_id` est fourni dans le payload :
+Si `id_employee` est fourni dans le payload :
 
-- la prédiction est liée directement à l'employé concerné.
+- l'API retrouve l'employe via son identifiant metier `employees.id_employee` ;
+- puis la prediction est reliee a la ligne correspondante en base.
 
 Sinon :
 
@@ -690,7 +691,7 @@ Sinon :
   pour Hugging Face Spaces en raison des contraintes réseau de la plateforme.
 - La sécurité repose sur une clé API simple, adaptée à un POC mais pas à une
   authentification complète de niveau production.
-- Un endpoint `/predict/by-employee/{employee_id}` pourrait être ajouté plus tard.
+- Un endpoint `/predict/by-employee/{id_employee}` pourrait être ajouté plus tard.
 - Le protocole de réentraînement du modèle peut encore être davantage automatisé.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

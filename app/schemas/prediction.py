@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 
 #************************
@@ -37,6 +37,13 @@ PREDICTION_INPUT_EXAMPLE = {
     "frequence_deplacement": "Occasionnel",
 }
 
+PREDICTION_OUTPUT_EXAMPLE = {
+    "prediction": 1,
+    "probability": 0.9757943470153518,
+    "threshold": 0.211717,
+    "label": "attrition",
+}
+
 
 #************************
 #* Schema input         *
@@ -45,10 +52,11 @@ PREDICTION_INPUT_EXAMPLE = {
 class PredictionInput(BaseModel):
     model_config = ConfigDict(json_schema_extra={"example": PREDICTION_INPUT_EXAMPLE})
 
-    employee_id: int | None = Field(
+    id_employee: int | None = Field(
         default=None,
         ge=1,
-        description="Optional identifier of an existing employee for traceability.",
+        validation_alias=AliasChoices("id_employee", "employee_id"),
+        description="Optional business identifier of an existing employee for traceability.",
     )
     age: int = Field(..., ge=18, le=70)
     revenu_mensuel: int = Field(..., ge=0, le=50000)
@@ -122,6 +130,8 @@ class PredictionInput(BaseModel):
 #************************
 
 class PredictionOutput(BaseModel):
+    model_config = ConfigDict(json_schema_extra={"example": PREDICTION_OUTPUT_EXAMPLE})
+
     prediction: Literal[0, 1]
     probability: float = Field(..., ge=0.0, le=1.0)
     threshold: float = Field(..., ge=0.0, le=1.0)

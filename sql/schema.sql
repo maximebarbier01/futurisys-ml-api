@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS employees (
     id SERIAL PRIMARY KEY,
+    id_employee INTEGER NOT NULL UNIQUE,
     age INTEGER NOT NULL,
     revenu_mensuel INTEGER NOT NULL,
     nombre_experiences_precedentes INTEGER NOT NULL,
