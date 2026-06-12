@@ -22,6 +22,7 @@ class Employee(Base):
     __tablename__ = "employees"
 
     id = Column(Integer, primary_key=True, index=True)
+    id_employee = Column(Integer, unique=True, nullable=False, index=True)
 
     age = Column(Integer, nullable=False)
     revenu_mensuel = Column(Integer, nullable=False)

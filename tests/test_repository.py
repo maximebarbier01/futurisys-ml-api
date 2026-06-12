@@ -5,7 +5,7 @@ from app.db.repository import (
     create_prediction_input,
     create_prediction_output,
     find_matching_employee,
-    get_employee_by_id,
+    get_employee_by_business_id,
 )
 from app.schemas.prediction import PREDICTION_INPUT_EXAMPLE
 
@@ -24,20 +24,21 @@ def build_payload(**overrides):
 #* Tests lecture employees     *
 #********************************
 
-def test_get_employee_by_id_returns_employee(db_session):
-    employee = Employee(**build_payload())
+def test_get_employee_by_business_id_returns_employee(db_session):
+    employee = Employee(id_employee=1001, **build_payload())
     db_session.add(employee)
     db_session.commit()
     db_session.refresh(employee)
 
-    result = get_employee_by_id(db_session, employee.id)
+    result = get_employee_by_business_id(db_session, employee.id_employee)
 
     assert result is not None
     assert result.id == employee.id
+    assert result.id_employee == employee.id_employee
 
 
-def test_get_employee_by_id_returns_none(db_session):
-    result = get_employee_by_id(db_session, 999999)
+def test_get_employee_by_business_id_returns_none(db_session):
+    result = get_employee_by_business_id(db_session, 999999)
 
     assert result is None
 
@@ -45,7 +46,7 @@ def test_get_employee_by_id_returns_none(db_session):
 def test_find_matching_employee_returns_employee(db_session):
     payload = build_payload()
 
-    employee = Employee(**payload)
+    employee = Employee(id_employee=1002, **payload)
     db_session.add(employee)
     db_session.commit()
     db_session.refresh(employee)
@@ -57,7 +58,7 @@ def test_find_matching_employee_returns_employee(db_session):
 
 
 def test_find_matching_employee_returns_none_when_no_match(db_session):
-    employee = Employee(**build_payload())
+    employee = Employee(id_employee=1003, **build_payload())
     db_session.add(employee)
     db_session.commit()
 
@@ -71,7 +72,7 @@ def test_find_matching_employee_returns_none_when_no_match(db_session):
 #********************************
 
 def test_create_prediction_input_with_employee_id(db_session):
-    employee = Employee(**build_payload())
+    employee = Employee(id_employee=1004, **build_payload())
     db_session.add(employee)
     db_session.commit()
     db_session.refresh(employee)
