@@ -18,6 +18,7 @@ erDiagram
 
     EMPLOYEES {
         int id PK
+        int id_employee
         int age
         int revenu_mensuel
         int nombre_experiences_precedentes
@@ -119,10 +120,12 @@ python scripts/load_dataset.py --csv-path /path/to/dataset.csv --truncate
 
 ## Flux de travail de traçabilité
 
-1. Une ligne du dataset est stockée dans `employees`.
-2. Une requête de prédiction envoyée à `/predict` est stockée dans `prediction_inputs`.
-3. Si `employee_id` est fourni dans le payload, l’API relie directement `prediction_inputs.employee_id` à l’employé correspondant.
-4. Si `employee_id` n’est pas fourni, l’API tente un matching exact entre le payload et une ligne déjà présente dans `employees`.
-5. La sortie du modèle est stockée dans `prediction_outputs`.
+1. Une ligne du dataset est stockee dans `employees`.
+2. Une requete de prediction envoyee a `/predict` est stockee dans `prediction_inputs`.
+3. Si `id_employee` est fourni dans le payload, l'API retrouve d'abord la ligne `employees.id_employee` correspondante.
+4. Elle stocke ensuite le lien relationnel dans `prediction_inputs.employee_id`, qui pointe vers `employees.id`.
+5. Si `id_employee` n'est pas fourni, l'API tente un matching exact entre le payload et une ligne deja presente dans `employees`.
+6. La sortie du modele est stockee dans `prediction_outputs`.
+
 
 Cela crée une piste d’audit complète du pipeline d’inférence ML.

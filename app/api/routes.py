@@ -10,7 +10,7 @@ from app.db.repository import (
     create_prediction_input,
     create_prediction_output,
     find_matching_employee,
-    get_employee_by_id,
+    get_employee_by_business_id,
 )
 from app.schemas.prediction import (
     PREDICTION_OUTPUT_EXAMPLE,
@@ -47,18 +47,18 @@ logger = logging.getLogger(__name__)
 )
 def predict(input_data: PredictionInput, db: Session = Depends(get_db)):
     payload = input_data.model_dump(exclude_none=True)
-    employee_id = payload.pop("employee_id", None)
+    id_employee = payload.pop("id_employee", None)
     prediction_result = model_service.predict(payload)
 
     try:
         employee = None
 
-        if employee_id is not None:
-            employee = get_employee_by_id(db, employee_id)
+        if id_employee is not None:
+            employee = get_employee_by_business_id(db, id_employee)
             if employee is None:
                 raise HTTPException(
                     status_code=404,
-                    detail=f"Employee {employee_id} not found",
+                    detail=f"Employee {id_employee} not found",
                 )
         else:
             employee = find_matching_employee(db, payload)

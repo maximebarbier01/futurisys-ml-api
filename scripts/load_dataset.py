@@ -12,6 +12,7 @@ from app.db.models import Employee
 #************************
 
 EXPECTED_COLUMNS = [
+    "id_employee",
     "age",
     "revenu_mensuel",
     "nombre_experiences_precedentes",
@@ -42,6 +43,7 @@ EXPECTED_COLUMNS = [
 ]
 
 INT_COLUMNS = [
+    "id_employee",
     "age",
     "revenu_mensuel",
     "nombre_experiences_precedentes",
@@ -118,6 +120,12 @@ def validate_dataset(df: pd.DataFrame) -> pd.DataFrame:
 
     for column in TEXT_COLUMNS:
         dataset[column] = dataset[column].astype(str).str.strip()
+
+    if dataset["id_employee"].duplicated().any():
+        duplicated_ids = dataset.loc[dataset["id_employee"].duplicated(), "id_employee"].tolist()
+        raise ValueError(
+            f"Dataset contains duplicate id_employee values: {duplicated_ids[:5]}"
+        )
 
     return dataset
 

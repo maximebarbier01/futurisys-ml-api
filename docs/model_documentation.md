@@ -242,5 +242,5 @@ Des évolutions possibles sont :
 - automatiser davantage le protocole de réentraînement
 - ajouter un suivi de dérive des données
 - historiser les versions du modèle plus finement
-- exposer un endpoint dédié du type `/predict/by-employee/{employee_id}`
+- exposer un endpoint dédié du type `/predict/by-employee/{id_employee}`
 - intégrer un monitoring plus avancé en production

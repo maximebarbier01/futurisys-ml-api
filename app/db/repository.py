@@ -42,8 +42,8 @@ TRACKED_INPUT_FIELDS = (
 #* Lecture employees    *
 #************************
 
-def get_employee_by_id(db: Session, employee_id: int) -> Employee | None:
-    return db.query(Employee).filter_by(id=employee_id).first()
+def get_employee_by_business_id(db: Session, id_employee: int) -> Employee | None:
+    return db.query(Employee).filter_by(id_employee=id_employee).first()
 
 
 def find_matching_employee(db: Session, input_data: dict) -> Employee | None:

@@ -143,12 +143,12 @@ def test_predict_functional_cases(case_name):
 def test_predict_logs_request_and_response(db_session):
     payload = get_valid_payload()
 
-    employee = Employee(**payload)
+    employee = Employee(id_employee=1001, **payload)
     db_session.add(employee)
     db_session.commit()
     db_session.refresh(employee)
 
-    payload["employee_id"] = employee.id
+    payload["id_employee"] = employee.id_employee
 
     response = client.post("/predict", json=payload)
 
