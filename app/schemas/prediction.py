@@ -1,7 +1,11 @@
 from typing import Literal
 
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field
-
+from pydantic import (
+    AliasChoices, 
+    BaseModel, 
+    ConfigDict, 
+    Field
+)
 
 #************************
 #* Exemple de payload   *
@@ -55,7 +59,6 @@ class PredictionInput(BaseModel):
     id_employee: int | None = Field(
         default=None,
         ge=1,
-        validation_alias=AliasChoices("id_employee", "employee_id"),
         description="Optional business identifier of an existing employee for traceability.",
     )
     age: int = Field(..., ge=18, le=70)

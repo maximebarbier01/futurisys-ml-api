@@ -75,6 +75,7 @@ def find_matching_employee(db: Session, input_data: dict) -> Employee | None:
 #* Ecriture prediction input  *
 #******************************
 
+# Cette table sert à historiser les données entrées pour faire une prédiction
 def create_prediction_input(
     db: Session,
     input_data: dict,
