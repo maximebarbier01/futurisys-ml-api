@@ -12,6 +12,7 @@ from app.db.models import Employee
 #************************
 
 EXPECTED_COLUMNS = [
+    "id_employee",
     "age",
     "revenu_mensuel",
     "nombre_experiences_precedentes",
@@ -42,6 +43,7 @@ EXPECTED_COLUMNS = [
 ]
 
 INT_COLUMNS = [
+    "id_employee",
     "age",
     "revenu_mensuel",
     "nombre_experiences_precedentes",

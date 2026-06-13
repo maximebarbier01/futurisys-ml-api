@@ -118,7 +118,7 @@ def test_predict_success():
     assert data["prediction"] in [0, 1]
     assert 0 <= data["probability"] <= 1
     assert 0 <= data["threshold"] <= 1
-    assert data["label"] in ["attrition", "non_attrition"]
+    assert data["label"] in ["risque_attrition_important", "risque_attrition_faible"]
 
 
 @pytest.mark.parametrize("case_name", ["stable_profile", "at_risk_profile"])
@@ -143,12 +143,12 @@ def test_predict_functional_cases(case_name):
 def test_predict_logs_request_and_response(db_session):
     payload = get_valid_payload()
 
-    employee = Employee(**payload)
+    employee = Employee(id_employee=2068, **payload)
     db_session.add(employee)
     db_session.commit()
     db_session.refresh(employee)
 
-    payload["employee_id"] = employee.id
+    payload["id_employee"] = employee.id_employee
 
     response = client.post("/predict", json=payload)
 
@@ -161,7 +161,7 @@ def test_predict_logs_request_and_response(db_session):
     assert output_log.prediction_input_id == input_log.id
     assert output_log.prediction in [0, 1]
     assert 0 <= output_log.probability <= 1
-    assert output_log.label in ["attrition", "non_attrition"]
+    assert output_log.label in ["risque_attrition_important", "risque_attrition_faible"]
 
 
 def test_predict_without_matching_employee_still_succeeds(db_session):
@@ -178,11 +178,11 @@ def test_predict_without_matching_employee_still_succeeds(db_session):
     assert output_log.prediction_input_id == input_log.id
 
 
-def test_predict_unknown_employee_id_returns_404():
-    response = client.post("/predict", json=get_invalid_payload("unknown_employee_id"))
+def test_predict_unknown_id_employee_returns_404():
+    response = client.post("/predict", json=get_invalid_payload("unknown_id_employee"))
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Employee 999999 not found"}
+    assert response.json() == {"detail": "L'employé 999999 n'a pas été trouvé"}
 
 
 def test_predict_success_without_database_tracking(monkeypatch, db_session):

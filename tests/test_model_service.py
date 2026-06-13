@@ -80,21 +80,21 @@ def test_predict_returns_expected_keys(monkeypatch):
     assert set(result.keys()) == {"prediction", "probability", "threshold", "label"}
 
 
-def test_predict_below_threshold_returns_non_attrition(monkeypatch):
+def test_predict_below_threshold_returns_low_attrition_risk(monkeypatch):
     service = build_service(monkeypatch, threshold=0.30)
     monkeypatch.setattr(service, "predict_proba", lambda _input: 0.29)
 
     result = service.predict({"age": 38, "revenu_mensuel": 5400})
 
     assert result["prediction"] == 0
-    assert result["label"] == "non_attrition"
+    assert result["label"] == "risque_attrition_faible"
 
 
-def test_predict_at_or_above_threshold_returns_attrition(monkeypatch):
+def test_predict_at_or_above_threshold_returns_high_attrition_risk(monkeypatch):
     service = build_service(monkeypatch, threshold=0.30)
     monkeypatch.setattr(service, "predict_proba", lambda _input: 0.30)
 
     result = service.predict({"age": 38, "revenu_mensuel": 5400})
 
     assert result["prediction"] == 1
-    assert result["label"] == "attrition"
+    assert result["label"] == "risque_attrition_important"

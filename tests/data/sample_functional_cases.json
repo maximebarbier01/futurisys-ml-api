@@ -1,7 +1,7 @@
 {
   "stable_profile": {
     "expected_prediction": 0,
-    "expected_label": "non_attrition",
+    "expected_label": "risque_attrition_faible",
     "payload": {
       "age": 38,
       "revenu_mensuel": 5400,
@@ -34,7 +34,7 @@
   },
   "at_risk_profile": {
     "expected_prediction": 1,
-    "expected_label": "attrition",
+    "expected_label": "risque_attrition_important",
     "payload": {
       "age": 26,
       "revenu_mensuel": 2800,

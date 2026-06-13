@@ -33,9 +33,9 @@ class ModelService:
         return joblib.load(self.model_path)
 
     def predict_proba(self, input_data: dict) -> float:
-        X = pd.DataFrame([input_data])
-        X = X[self.feature_columns]
-        proba = self.model.predict_proba(X)[:, 1][0]
+        X = pd.DataFrame([input_data]) # dict transformé en DataFrame 
+        X = X[self.feature_columns] # colonnes sont remises exactement dans l'ordre attendu par le modèle 
+        proba = self.model.predict_proba(X)[:, 1][0] # le modèle calcule la probabilité de la classe positive
         return float(proba)
 
     def predict(self, input_data: dict) -> dict:
@@ -46,7 +46,7 @@ class ModelService:
             "prediction": prediction,
             "probability": proba,
             "threshold": self.threshold,
-            "label": "attrition" if prediction == 1 else "non_attrition",
+            "label": "risque_attrition_important" if prediction == 1 else "risque_attrition_faible",
         }
 
 

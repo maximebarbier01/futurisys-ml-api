@@ -463,7 +463,7 @@ curl -X POST "http://127.0.0.1:8000/predict" \
   "prediction": 1,
   "probability": 0.73,
   "threshold": 0.211717,
-  "label": "attrition"
+  "label": "risque_attrition_important"
 }
 ```
 
@@ -475,7 +475,7 @@ Le schéma Pydantic :
 - contrôle les types ;
 - impose des bornes métier ;
 - restreint certaines catégories avec `Literal[...]` ;
-- accepte un `employee_id` optionnel pour lier une prédiction à un employé existant.
+- accepte un `id_employee` optionnel pour lier une prédiction à un employé existant.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -485,8 +485,8 @@ Le schéma Pydantic :
 
 Le modèle réalise une **classification binaire** :
 
-- `0` : `non_attrition`
-- `1` : `attrition`
+- `0` : `risque_attrition_faible`
+- `1` : `risque_attrition_important`
 
 ### Artefact déployé
 
@@ -580,8 +580,8 @@ xdg-open htmlcov/index.html
 
 État actuel :
 
-- 29 tests
-- 100% de couverture sur `app`
+- 31 tests
+- 99% de couverture sur `app`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -662,7 +662,7 @@ Le projet garantit une traçabilité locale des inférences :
 - chaque payload reçu par `/predict` est stocké dans `prediction_inputs` ;
 - chaque résultat retourné est stocké dans `prediction_outputs`.
 
-Si `employee_id` est fourni dans le payload :
+Si `id_employee` est fourni dans le payload :
 
 - la prédiction est liée directement à l'employé concerné.
 
@@ -678,7 +678,7 @@ Sinon :
   pour Hugging Face Spaces en raison des contraintes réseau de la plateforme.
 - La sécurité repose sur une clé API simple, adaptée à un POC mais pas à une
   authentification complète de niveau production.
-- Un endpoint `/predict/by-employee/{employee_id}` pourrait être ajouté plus tard.
+- Un endpoint `/predict/by-employee/{id_employee}` pourrait être ajouté plus tard.
 - Le protocole de réentraînement du modèle peut encore être davantage automatisé.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
