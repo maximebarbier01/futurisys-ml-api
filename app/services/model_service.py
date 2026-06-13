@@ -9,6 +9,7 @@ import pandas as pd
 #* Constante modele     *
 #************************
 
+# Chemin vers l'artifact joblib du modèle entraîné.
 MODEL_PATH = Path(__file__).resolve().parents[2] / "model" / "final_model.joblib"
 
 
@@ -19,7 +20,7 @@ MODEL_PATH = Path(__file__).resolve().parents[2] / "model" / "final_model.joblib
 class ModelService:
     def __init__(self, model_path: Path = MODEL_PATH):
         self.model_path = model_path
-        self.artifact = self._load_artifact()
+        self.artifact = self._load_artifact() # Chargement de l'artifact joblib contenant le modèle et ses métadonnées.
 
         self.model = self.artifact["model"]
         self.threshold = float(self.artifact["threshold"])
@@ -28,6 +29,9 @@ class ModelService:
         self.model_version = str(self.artifact.get("model_version", "0.1.0"))
 
     def _load_artifact(self) -> dict[str, Any]:
+        """
+        Charge l'artifact joblib contenant le modèle et ses métadonnées.
+        """
         if not self.model_path.exists():
             raise FileNotFoundError(f"Model file not found: {self.model_path}")
         return joblib.load(self.model_path)
@@ -54,4 +58,6 @@ class ModelService:
 #* Instance partagee    *
 #************************
 
+# Instance unique chargée au démarrage de l'application.
+# Cela évite de recharger le modèle à chaque requête /predict.
 model_service = ModelService()

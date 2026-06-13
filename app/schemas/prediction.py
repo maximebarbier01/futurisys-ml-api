@@ -11,6 +11,7 @@ from pydantic import (
 #* Exemple de payload   *
 #************************
 
+# Exemple de requête valide affiché dans la documentation Swagger/OpenAPI.
 PREDICTION_INPUT_EXAMPLE = {
     "age": 38,
     "revenu_mensuel": 5400,
@@ -41,10 +42,11 @@ PREDICTION_INPUT_EXAMPLE = {
     "frequence_deplacement": "Occasionnel",
 }
 
+# Exemple de réponse valide affiché dans la documentation Swagger/OpenAPI.
 PREDICTION_OUTPUT_EXAMPLE = {
     "prediction": 1,
-    "probability": 0.9757943470153518,
-    "threshold": 0.211717,
+    "probability": 0.98,
+    "threshold": 0.21,
     "label": "risque_attrition_important",
 }
 
@@ -54,8 +56,10 @@ PREDICTION_OUTPUT_EXAMPLE = {
 #************************
 
 class PredictionInput(BaseModel):
+    # J'ajoute ici l'exemple de payload
     model_config = ConfigDict(json_schema_extra={"example": PREDICTION_INPUT_EXAMPLE})
 
+    # Identifiant métier optionnel du salarié.
     id_employee: int | None = Field(
         default=None,
         ge=1,
@@ -133,6 +137,8 @@ class PredictionInput(BaseModel):
 #************************
 
 class PredictionOutput(BaseModel):
+
+    # Ajoute l'exemple de réponse dans le schéma OpenAPI.
     model_config = ConfigDict(json_schema_extra={"example": PREDICTION_OUTPUT_EXAMPLE})
 
     prediction: Literal[0, 1]
