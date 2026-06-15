@@ -413,11 +413,23 @@ La documentation Swagger/OpenAPI est disponible ici :
 L'endpoint `/predict` peut être protégé par une clé API transmise dans l'en-tête
 `X-API-Key`.
 
+L'authentification mise en place repose sur une clé API transmise dans
+`X-API-Key`. Elle protège l'endpoint métier `/predict`, tandis que `/` et
+`/health` restent publics pour les besoins de supervision.
+
 Variables d'environnement associées :
 
 - `API_KEY` : valeur attendue pour autoriser l'accès ;
 - `API_KEY_HEADER_NAME` : nom de l'en-tête HTTP utilisé, `X-API-Key` par
   défaut.
+
+Les secrets applicatifs (`API_KEY`, `DATABASE_URL`) ne doivent jamais être
+stockés en dur dans le code ni commités dans le dépôt. Ils doivent être fournis
+via des variables d'environnement ou des fichiers `.env` non versionnés.
+
+Ce mécanisme correspond à une sécurité simple adaptée à un POC. En production,
+il pourrait être complété par une authentification plus robuste, une gestion
+des rôles, une rotation des secrets et une solution de coffre-fort.
 
 ### Exemple de requête
 
@@ -664,7 +676,8 @@ Le projet garantit une traçabilité locale des inférences :
 
 Si `id_employee` est fourni dans le payload :
 
-- la prédiction est liée directement à l'employé concerné.
+- l'API retrouve l'employe via son identifiant metier `employees.id_employee` ;
+- puis la prediction est reliee a la ligne correspondante en base.
 
 Sinon :
 

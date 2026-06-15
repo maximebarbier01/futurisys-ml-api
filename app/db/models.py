@@ -35,6 +35,7 @@ class Employee(Base):
 
     # Identifiant technique du salarié.
     id = Column(Integer, primary_key=True, index=True)
+    id_employee = Column(Integer, unique=True, nullable=False, index=True)
 
     # Identifiant métier du salarié 
     id_employee = Column(Integer, unique=True, nullable=False, index=True)
