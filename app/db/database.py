@@ -43,7 +43,7 @@ def get_database_url() -> str:
 #* Objets SQLAlchemy    *
 #************************
 
-# Création de l'engine SQLAlchemy (objet bas niveau qui gère la connexion avec la base de données)
+# Création de l'engine SQLAlchemy (moteur de connexion avec la base de données)
 engine = create_engine(get_database_url())
 
 # Création d'une fabrique de sessions SQLAlchemy (permet de créer une nouvelle session à chaque requête)
