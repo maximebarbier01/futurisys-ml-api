@@ -475,7 +475,7 @@ curl -X POST "http://127.0.0.1:8000/predict" \
   "prediction": 1,
   "probability": 0.73,
   "threshold": 0.211717,
-  "label": "attrition"
+  "label": "risque_attrition_important"
 }
 ```
 
@@ -497,8 +497,8 @@ Le schéma Pydantic :
 
 Le modèle réalise une **classification binaire** :
 
-- `0` : `non_attrition`
-- `1` : `attrition`
+- `0` : `risque_attrition_faible`
+- `1` : `risque_attrition_important`
 
 ### Artefact déployé
 
@@ -592,8 +592,8 @@ xdg-open htmlcov/index.html
 
 État actuel :
 
-- 29 tests
-- 100% de couverture sur `app`
+- 31 tests
+- 99% de couverture sur `app`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

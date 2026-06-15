@@ -14,8 +14,8 @@ Cette prédiction permet :
 Le problème traité est un problème de classification binaire.
 
 Sorties attendues :
-- `0` : `non_attrition`
-- `1` : `attrition`
+- `0` : `risque_attrition_faible`
+- `1` : `risque_attrition_important`
 
 L’API retourne également une probabilité associée à la classe positive ainsi que le seuil de décision utilisé.
 
@@ -106,7 +106,7 @@ L’API retourne une réponse de la forme :
   "prediction": 1,
   "probability": 0.73,
   "threshold": 0.211717,
-  "label": "attrition"
+  "label": "risque_attrition_important"
 }
 ```
 

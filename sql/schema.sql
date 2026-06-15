@@ -79,6 +79,9 @@ CREATE TABLE IF NOT EXISTS prediction_outputs (
 CREATE INDEX IF NOT EXISTS idx_prediction_inputs_employee_id
     ON prediction_inputs(employee_id);
 
+CREATE INDEX IF NOT EXISTS idx_employees_id_employee
+    ON employees(id_employee);
+
 CREATE INDEX IF NOT EXISTS idx_prediction_outputs_prediction_input_id
     ON prediction_outputs(prediction_input_id);
 

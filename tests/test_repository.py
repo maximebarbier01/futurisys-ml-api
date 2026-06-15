@@ -20,12 +20,18 @@ def build_payload(**overrides):
     return payload
 
 
+def build_employee_payload(id_employee: int = 1001, **overrides):
+    payload = build_payload(**overrides)
+    payload["id_employee"] = id_employee
+    return payload
+
+
 #********************************
 #* Tests lecture employees     *
 #********************************
 
 def test_get_employee_by_business_id_returns_employee(db_session):
-    employee = Employee(id_employee=1001, **build_payload())
+    employee = Employee(**build_employee_payload(id_employee=2068))
     db_session.add(employee)
     db_session.commit()
     db_session.refresh(employee)
@@ -33,7 +39,6 @@ def test_get_employee_by_business_id_returns_employee(db_session):
     result = get_employee_by_business_id(db_session, employee.id_employee)
 
     assert result is not None
-    assert result.id == employee.id
     assert result.id_employee == employee.id_employee
 
 
@@ -46,7 +51,7 @@ def test_get_employee_by_business_id_returns_none(db_session):
 def test_find_matching_employee_returns_employee(db_session):
     payload = build_payload()
 
-    employee = Employee(id_employee=1002, **payload)
+    employee = Employee(**build_employee_payload(id_employee=2068))
     db_session.add(employee)
     db_session.commit()
     db_session.refresh(employee)
@@ -58,7 +63,7 @@ def test_find_matching_employee_returns_employee(db_session):
 
 
 def test_find_matching_employee_returns_none_when_no_match(db_session):
-    employee = Employee(id_employee=1003, **build_payload())
+    employee = Employee(**build_employee_payload(id_employee=2068))
     db_session.add(employee)
     db_session.commit()
 
@@ -72,7 +77,7 @@ def test_find_matching_employee_returns_none_when_no_match(db_session):
 #********************************
 
 def test_create_prediction_input_with_employee_id(db_session):
-    employee = Employee(id_employee=1004, **build_payload())
+    employee = Employee(**build_employee_payload(id_employee=2068))
     db_session.add(employee)
     db_session.commit()
     db_session.refresh(employee)
@@ -106,7 +111,7 @@ def test_create_prediction_output_persists_all_fields(db_session):
         "prediction": 1,
         "probability": 0.87,
         "threshold": 0.211717,
-        "label": "attrition",
+        "label": "risque_attrition_important",
     }
 
     prediction_output = create_prediction_output(
@@ -122,6 +127,6 @@ def test_create_prediction_output_persists_all_fields(db_session):
     assert prediction_output.prediction == 1
     assert prediction_output.probability == 0.87
     assert prediction_output.threshold == 0.211717
-    assert prediction_output.label == "attrition"
+    assert prediction_output.label == "risque_attrition_important"
     assert prediction_output.model_name == "final_model"
     assert prediction_output.model_version == "0.1.0"

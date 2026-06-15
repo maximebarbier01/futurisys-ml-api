@@ -41,4 +41,6 @@ build-backend = "poetry.core.masonry.api"
 pythonpath = ["."]
 testpaths = ["tests"]
 
+[tool.fastapi]
+entrypoint = "app.main:app"
 
