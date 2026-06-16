@@ -157,7 +157,7 @@ def test_predict_logs_request_and_response(db_session):
     input_log = db_session.query(PredictionInputLog).one()
     output_log = db_session.query(PredictionOutputLog).one()
 
-    assert input_log.employee_id == employee.id
+    assert input_log.id_employee == employee.id_employee
     assert output_log.prediction_input_id == input_log.id
     assert output_log.prediction in [0, 1]
     assert 0 <= output_log.probability <= 1
@@ -174,7 +174,7 @@ def test_predict_without_matching_employee_still_succeeds(db_session):
     input_log = db_session.query(PredictionInputLog).one()
     output_log = db_session.query(PredictionOutputLog).one()
 
-    assert input_log.employee_id is None
+    assert input_log.id_employee is None
     assert output_log.prediction_input_id == input_log.id
 
 

@@ -33,12 +33,8 @@ class Employee(Base):
     # Nom réel de la table dans la base de données.
     __tablename__ = "employees"
 
-    # Identifiant technique du salarié.
-    id = Column(Integer, primary_key=True, index=True)
-    id_employee = Column(Integer, unique=True, nullable=False, index=True)
-
-    # Identifiant métier du salarié 
-    id_employee = Column(Integer, unique=True, nullable=False, index=True)
+    # Identifiant métier central du salarié.
+    id_employee = Column(Integer, primary_key=True)
 
     age = Column(Integer, nullable=False)
     revenu_mensuel = Column(Integer, nullable=False)
@@ -96,8 +92,8 @@ class PredictionInputLog(Base):
     # Identifiant technique de l'input de prédiction.
     id = Column(Integer, primary_key=True, index=True)
 
-    # Identifiant du salarié associé à la prédiction.
-    employee_id = Column(Integer, ForeignKey("employees.id"), nullable=True)
+    # Identifiant métier du salarié associé à la prédiction.
+    id_employee = Column(Integer, ForeignKey("employees.id_employee"), nullable=True)
 
     age = Column(Integer, nullable=False)
     revenu_mensuel = Column(Integer, nullable=False)

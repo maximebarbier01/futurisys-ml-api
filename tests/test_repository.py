@@ -59,7 +59,7 @@ def test_find_matching_employee_returns_employee(db_session):
     result = find_matching_employee(db_session, payload)
 
     assert result is not None
-    assert result.id == employee.id
+    assert result.id_employee == employee.id_employee
 
 
 def test_find_matching_employee_returns_none_when_no_match(db_session):
@@ -76,7 +76,7 @@ def test_find_matching_employee_returns_none_when_no_match(db_session):
 #* Tests prediction_inputs      *
 #********************************
 
-def test_create_prediction_input_with_employee_id(db_session):
+def test_create_prediction_input_with_id_employee(db_session):
     employee = Employee(**build_employee_payload(id_employee=2068))
     db_session.add(employee)
     db_session.commit()
@@ -85,19 +85,19 @@ def test_create_prediction_input_with_employee_id(db_session):
     prediction_input = create_prediction_input(
         db_session,
         build_payload(),
-        employee_id=employee.id,
+        id_employee=employee.id_employee,
     )
 
     assert prediction_input.id is not None
-    assert prediction_input.employee_id == employee.id
+    assert prediction_input.id_employee == employee.id_employee
     assert prediction_input.age == 38
 
 
-def test_create_prediction_input_without_employee_id(db_session):
+def test_create_prediction_input_without_id_employee(db_session):
     prediction_input = create_prediction_input(db_session, build_payload())
 
     assert prediction_input.id is not None
-    assert prediction_input.employee_id is None
+    assert prediction_input.id_employee is None
 
 
 #********************************

@@ -677,7 +677,7 @@ Le projet garantit une traçabilité locale des inférences :
 Si `id_employee` est fourni dans le payload :
 
 - l'API retrouve l'employe via son identifiant metier `employees.id_employee` ;
-- puis la prediction est reliee a la ligne correspondante en base.
+- puis la prediction est reliee a la ligne correspondante via `prediction_inputs.id_employee`.
 
 Sinon :
 

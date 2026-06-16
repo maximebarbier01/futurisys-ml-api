@@ -17,8 +17,7 @@ erDiagram
     PREDICTION_INPUTS ||--|| PREDICTION_OUTPUTS : "produces"
 
     EMPLOYEES {
-        int id PK
-        int id_employee UK
+        int id_employee PK
         int age
         int revenu_mensuel
         int nombre_experiences_precedentes
@@ -51,7 +50,7 @@ erDiagram
 
     PREDICTION_INPUTS {
         int id PK
-        int employee_id FK
+        int id_employee FK
         int age
         int revenu_mensuel
         int nombre_experiences_precedentes
@@ -122,7 +121,7 @@ python scripts/load_dataset.py --csv-path /path/to/dataset.csv --truncate
 
 1. Une ligne du dataset est stockée dans `employees`.
 2. Une requête de prédiction envoyée à `/predict` est stockée dans `prediction_inputs`.
-3. Si `id_employee` est fourni dans le payload, l’API retrouve d’abord le salarié via `employees.id_employee`, puis relie `prediction_inputs.employee_id` à `employees.id`.
+3. Si `id_employee` est fourni dans le payload, l’API relie directement `prediction_inputs.id_employee` à `employees.id_employee`.
 4. Si `id_employee` n’est pas fourni, l’API tente un matching exact entre le payload et une ligne déjà présente dans `employees`.
 5. La sortie du modèle est stockée dans `prediction_outputs`.
 

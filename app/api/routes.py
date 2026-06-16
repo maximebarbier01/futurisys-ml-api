@@ -161,12 +161,12 @@ def predict(input_data: PredictionInput, db: Session = Depends(get_db)):
         # ---------------------------------------------------------
         # On sauvegarde en base les données utilisées pour faire la prédiction.
         #
-        # Si un salarié a été retrouvé, on rattache l'input à son identifiant technique.
+        # Si un salarié a été retrouvé, on rattache l'input à son identifiant métier central.
         # Sinon, la clé étrangère reste à None.
         prediction_input = create_prediction_input(
             db,
             payload,
-            employee_id=employee.id if employee else None,
+            id_employee=employee.id_employee if employee else None,
         )
 
         # ---------------------------------------------------------
