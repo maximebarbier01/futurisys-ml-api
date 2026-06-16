@@ -79,7 +79,7 @@ def find_matching_employee(db: Session, input_data: dict) -> Employee | None:
 def create_prediction_input(
     db: Session,
     input_data: dict,
-    employee_id: int | None = None,
+    id_employee: int | None = None,
 ) -> PredictionInputLog:
     """
     Enregistre en base les données d'entrée utilisées pour faire une prédiction.
@@ -91,7 +91,7 @@ def create_prediction_input(
     PredictionInputLog
         Objet SQLAlchemy correspondant à la ligne créée en base.
     """
-    prediction_input = PredictionInputLog(employee_id=employee_id, **input_data)
+    prediction_input = PredictionInputLog(id_employee=id_employee, **input_data)
     db.add(prediction_input)
     db.commit()
     db.refresh(prediction_input) # Recharge l'objet depuis la base.

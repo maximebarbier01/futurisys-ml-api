@@ -1,11 +1,6 @@
 from typing import Literal
 
-from pydantic import (
-    AliasChoices, 
-    BaseModel, 
-    ConfigDict, 
-    Field
-)
+from pydantic import BaseModel, ConfigDict, Field
 
 #************************
 #* Exemple de payload   *

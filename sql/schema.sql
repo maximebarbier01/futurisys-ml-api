@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS employees (
-    id SERIAL PRIMARY KEY,
-    id_employee INTEGER NOT NULL UNIQUE,
+    id_employee INTEGER PRIMARY KEY,
     age INTEGER NOT NULL,
     revenu_mensuel INTEGER NOT NULL,
     nombre_experiences_precedentes INTEGER NOT NULL,
@@ -33,7 +32,7 @@ CREATE TABLE IF NOT EXISTS employees (
 
 CREATE TABLE IF NOT EXISTS prediction_inputs (
     id SERIAL PRIMARY KEY,
-    employee_id INTEGER REFERENCES employees(id),
+    id_employee INTEGER REFERENCES employees(id_employee),
     age INTEGER NOT NULL,
     revenu_mensuel INTEGER NOT NULL,
     nombre_experiences_precedentes INTEGER NOT NULL,
@@ -76,11 +75,8 @@ CREATE TABLE IF NOT EXISTS prediction_outputs (
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_prediction_inputs_employee_id
-    ON prediction_inputs(employee_id);
-
-CREATE INDEX IF NOT EXISTS idx_employees_id_employee
-    ON employees(id_employee);
+CREATE INDEX IF NOT EXISTS idx_prediction_inputs_id_employee
+    ON prediction_inputs(id_employee);
 
 CREATE INDEX IF NOT EXISTS idx_prediction_outputs_prediction_input_id
     ON prediction_outputs(prediction_input_id);
