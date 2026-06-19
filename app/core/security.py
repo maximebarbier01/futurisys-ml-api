@@ -41,7 +41,7 @@ def require_api_key(api_key: str | None = Security(api_key_header)) -> str:
     if api_key != expected_api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or missing API key",
+            detail="L'API key manque ou est invalide",
         )
 
     return api_key
